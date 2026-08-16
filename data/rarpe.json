@@ -1,0 +1,1727 @@
+{
+  "proveedor": "rarpe",
+  "nombre_display": "RARPE",
+  "generado_en": "2026-08-14T18:57:45.931103",
+  "fecha_max_datos": "2026-08-14",
+  "serie_mensual": [
+    {
+      "mes": "2022-07",
+      "valor": 35589.08
+    },
+    {
+      "mes": "2022-08",
+      "valor": 16724.61
+    },
+    {
+      "mes": "2022-09",
+      "valor": 3076.37
+    },
+    {
+      "mes": "2022-10",
+      "valor": 167.17
+    },
+    {
+      "mes": "2022-12",
+      "valor": 250.2
+    },
+    {
+      "mes": "2023-02",
+      "valor": 693.65
+    },
+    {
+      "mes": "2023-03",
+      "valor": 4211.84
+    },
+    {
+      "mes": "2023-04",
+      "valor": 526.48
+    },
+    {
+      "mes": "2023-05",
+      "valor": 566.23
+    }
+  ],
+  "snapshots": {
+    "2025-08-31": {
+      "fecha_operativa": "2025-08-31",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2022": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          35589.08,
+          52313.69
+        ],
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97,
+          5998.2,
+          5998.2,
+          5998.2
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 7,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 8,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2025-09-30": {
+      "fecha_operativa": "2025-09-30",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2022": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          35589.08,
+          52313.69,
+          55390.06
+        ],
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97,
+          5998.2,
+          5998.2,
+          5998.2,
+          5998.2
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 7,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 8,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 9,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2025-10-31": {
+      "fecha_operativa": "2025-10-31",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2022": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          35589.08,
+          52313.69,
+          55390.06,
+          55557.23
+        ],
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97,
+          5998.2,
+          5998.2,
+          5998.2,
+          5998.2,
+          5998.2
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 7,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 8,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 9,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 10,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2025-11-30": {
+      "fecha_operativa": "2025-11-30",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2022": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          35589.08,
+          52313.69,
+          55390.06,
+          55557.23
+        ],
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97,
+          5998.2,
+          5998.2,
+          5998.2,
+          5998.2,
+          5998.2
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 7,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 8,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 9,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 10,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 11,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2025-12-31": {
+      "fecha_operativa": "2025-12-31",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2022": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          35589.08,
+          52313.69,
+          55390.06,
+          55557.23,
+          55807.43
+        ],
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97,
+          5998.2,
+          5998.2,
+          5998.2,
+          5998.2,
+          5998.2,
+          5998.2
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 7,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 8,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 9,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 10,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 11,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 12,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2026-01-31": {
+      "fecha_operativa": "2026-01-31",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {},
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2026-02-28": {
+      "fecha_operativa": "2026-02-28",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2023": [
+          693.65
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2026-03-31": {
+      "fecha_operativa": "2026-03-31",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2023": [
+          693.65,
+          4905.49
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2026-04-30": {
+      "fecha_operativa": "2026-04-30",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2026-05-31": {
+      "fecha_operativa": "2026-05-31",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97,
+          5998.2
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2026-06-30": {
+      "fecha_operativa": "2026-06-30",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97,
+          5998.2
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    },
+    "2026-07-31": {
+      "fecha_operativa": "2026-07-31",
+      "kpis": {
+        "venta_ytd": 0.0,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 0.0,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 0,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 0.0,
+        "actual": 0.0,
+        "n_perdidos": 0,
+        "n_nuevos": 0,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "B",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        },
+        {
+          "segmento": "C",
+          "entidades": 0.0,
+          "venta": 0.0,
+          "pct_venta": 0.0
+        }
+      ],
+      "mix_marca": [],
+      "top_movers": [],
+      "matriz_portafolio": [],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [],
+      "serie_multianual": {
+        "2022": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          35589.08
+        ],
+        "2023": [
+          693.65,
+          4905.49,
+          5431.97,
+          5998.2,
+          5998.2
+        ]
+      },
+      "momentum_mensual": [],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 7,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": []
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "generado_en": "2026-08-14T18:57:59.027200",
+  "fecha_operativa_mas_reciente": "2026-07-31",
+  "proveedores": [
+    {
+      "id": "altasa",
+      "nombre_display": "ALTASA",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "anphar",
+      "nombre_display": "ANPHAR",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "balaxi",
+      "nombre_display": "BALAXI",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "calox",
+      "nombre_display": "CALOX",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "farmamedica",
+      "nombre_display": "FARMAMEDICA",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "infarma",
+      "nombre_display": "INFARMA",
+      "n_snapshots": 4,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2026-04-30"
+    },
+    {
+      "id": "internacional",
+      "nombre_display": "INTERNACIONAL",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "natural-isnaya",
+      "nombre_display": "NATURAL ISNAYA",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "nipro",
+      "nombre_display": "NIPRO",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "p-a-s-m-o",
+      "nombre_display": "PASMO",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "pharmacaps",
+      "nombre_display": "PHARMACAPS",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "quimifar",
+      "nombre_display": "QUIMIFAR",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "raven",
+      "nombre_display": "RAVEN",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    },
+    {
+      "id": "riestra",
+      "nombre_display": "RIESTRA",
+      "n_snapshots": 12,
+      "fecha_mas_reciente": "2026-07-31",
+      "fecha_mas_antigua": "2025-08-31"
+    }
+  ]
+}

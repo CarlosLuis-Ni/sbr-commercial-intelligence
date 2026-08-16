@@ -1,0 +1,1582 @@
+{
+  "proveedor": "infarma",
+  "nombre_display": "INFARMA",
+  "generado_en": "2026-08-14T18:57:18.623086",
+  "fecha_max_datos": "2026-08-14",
+  "serie_mensual": [
+    {
+      "mes": "2026-04",
+      "valor": 500147.96
+    },
+    {
+      "mes": "2026-05",
+      "valor": 297914.01
+    },
+    {
+      "mes": "2026-06",
+      "valor": 201701.32
+    },
+    {
+      "mes": "2026-07",
+      "valor": 339886.36
+    }
+  ],
+  "snapshots": {
+    "2026-04-30": {
+      "fecha_operativa": "2026-04-30",
+      "kpis": {
+        "venta_ytd": 500147.96,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 500147.96,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 140,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 500147.96,
+        "actual": 500147.96,
+        "n_perdidos": 0,
+        "n_nuevos": 140,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 23,
+          "venta": 351101.65,
+          "pct_venta": 70.19955654722654
+        },
+        {
+          "segmento": "B",
+          "entidades": 46,
+          "venta": 99841.16,
+          "pct_venta": 19.962324748860315
+        },
+        {
+          "segmento": "C",
+          "entidades": 71,
+          "venta": 49205.15,
+          "pct_venta": 9.838118703913137
+        }
+      ],
+      "mix_marca": [
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor": 349544.64,
+          "pct": 69.9,
+          "segmento": "A"
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor": 68216.97,
+          "pct": 13.6,
+          "segmento": "A"
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor": 32968.62,
+          "pct": 6.6,
+          "segmento": "B"
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor": 19543.68,
+          "pct": 3.9,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor": 16404.91,
+          "pct": 3.3,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor": 13469.1,
+          "pct": 2.7,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (OFERTA GRATIS)",
+          "valor": 0.04,
+          "pct": 0.0,
+          "segmento": "C"
+        }
+      ],
+      "top_movers": [
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor_actual": 13469.1,
+          "delta": 13469.1,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor_actual": 16404.91,
+          "delta": 16404.91,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor_actual": 19543.68,
+          "delta": 19543.68,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor_actual": 32968.62,
+          "delta": 32968.62,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor_actual": 68216.97,
+          "delta": 68216.97,
+          "yoy_pct": null
+        },
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor_actual": 349544.64,
+          "delta": 349544.64,
+          "yoy_pct": null
+        }
+      ],
+      "matriz_portafolio": [
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor": 349544.64,
+          "pct_participacion": 69.9,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor": 68216.97,
+          "pct_participacion": 13.6,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor": 32968.62,
+          "pct_participacion": 6.6,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor": 19543.68,
+          "pct_participacion": 3.9,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor": 16404.91,
+          "pct_participacion": 3.3,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor": 13469.1,
+          "pct_participacion": 2.7,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (OFERTA GRATIS)",
+          "valor": 0.04,
+          "pct_participacion": 0.0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [
+        {
+          "codcliente": "2877",
+          "nombre": "XOCHILT BALTODANO",
+          "valor": 55046.4
+        },
+        {
+          "codcliente": "4478",
+          "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+          "valor": 46841.28
+        },
+        {
+          "codcliente": "3851",
+          "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+          "valor": 37844.48
+        },
+        {
+          "codcliente": "3477",
+          "nombre": "ALEXANDER, FARMACIA - PUERTO CABEZAS",
+          "valor": 34404.0
+        },
+        {
+          "codcliente": "3213",
+          "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "valor": 25177.34
+        }
+      ],
+      "serie_multianual": {
+        "2026": [
+          500147.96
+        ]
+      },
+      "momentum_mensual": [
+        {
+          "mes": 4,
+          "valor": 500147.96,
+          "mom_pct": 0.0
+        }
+      ],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Proponer impulso conjunto para CERENERVON ELIXIR JARABE 250ML (INFARMA), MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "detalle": "Principales motores de crecimiento del portafolio en el periodo.",
+          "capitulo_origen": "04",
+          "evidencia": {
+            "campo": "top_movers (positivos, top 2)",
+            "valor": [
+              {
+                "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+                "valor_actual": 349544.64,
+                "delta": 349544.64,
+                "yoy_pct": null
+              },
+              {
+                "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+                "valor_actual": 68216.97,
+                "delta": 68216.97,
+                "yoy_pct": null
+              }
+            ]
+          },
+          "dueno": "Dirección Comercial",
+          "plazo": "Próximo ciclo de campaña",
+          "prioridad": "Media"
+        },
+        {
+          "titulo": "Dar seguimiento prioritario a clientes nuevos con potencial B (XOCHILT BALTODANO, GUANUCA, CUBA, ALEXANDER, DISTRIBUIDORA PEREZ MATUTE - JALAPA)",
+          "detalle": "5 cliente(s) nuevo(s) ya alcanzan el piso de venta del Segmento B.",
+          "capitulo_origen": "05",
+          "evidencia": {
+            "campo": "clientes_nuevos_con_potencial_b",
+            "valor": [
+              {
+                "codcliente": "2877",
+                "nombre": "XOCHILT BALTODANO",
+                "nombre_corto": "XOCHILT BALTODANO",
+                "valor": 55046.4
+              },
+              {
+                "codcliente": "4478",
+                "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+                "nombre_corto": "GUANUCA",
+                "valor": 46841.28
+              },
+              {
+                "codcliente": "3851",
+                "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+                "nombre_corto": "CUBA",
+                "valor": 37844.48
+              },
+              {
+                "codcliente": "3477",
+                "nombre": "ALEXANDER, FARMACIA - PUERTO CABEZAS",
+                "nombre_corto": "ALEXANDER",
+                "valor": 34404.0
+              },
+              {
+                "codcliente": "3213",
+                "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+                "nombre_corto": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+                "valor": 25177.34
+              }
+            ]
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Revisión mensual",
+          "prioridad": "Media"
+        },
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 500147.96,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": [
+        {
+          "codcliente": "2877",
+          "nombre": "XOCHILT BALTODANO",
+          "nombre_corto": "XOCHILT BALTODANO",
+          "valor": 55046.4
+        },
+        {
+          "codcliente": "4478",
+          "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+          "nombre_corto": "GUANUCA",
+          "valor": 46841.28
+        },
+        {
+          "codcliente": "3851",
+          "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+          "nombre_corto": "CUBA",
+          "valor": 37844.48
+        },
+        {
+          "codcliente": "3477",
+          "nombre": "ALEXANDER, FARMACIA - PUERTO CABEZAS",
+          "nombre_corto": "ALEXANDER",
+          "valor": 34404.0
+        },
+        {
+          "codcliente": "3213",
+          "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "nombre_corto": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "valor": 25177.34
+        }
+      ]
+    },
+    "2026-05-31": {
+      "fecha_operativa": "2026-05-31",
+      "kpis": {
+        "venta_ytd": 798061.97,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 798061.97,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 219,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 798061.97,
+        "actual": 798061.97,
+        "n_perdidos": 0,
+        "n_nuevos": 219,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 34,
+          "venta": 560255.18,
+          "pct_venta": 70.20196439131162
+        },
+        {
+          "segmento": "B",
+          "entidades": 71,
+          "venta": 158924.23,
+          "pct_venta": 19.91377060605958
+        },
+        {
+          "segmento": "C",
+          "entidades": 114,
+          "venta": 78882.56,
+          "pct_venta": 9.884265002628807
+        }
+      ],
+      "mix_marca": [
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor": 591175.4,
+          "pct": 74.1,
+          "segmento": "A"
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor": 87937.51,
+          "pct": 11.0,
+          "segmento": "B"
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor": 47231.64,
+          "pct": 5.9,
+          "segmento": "B"
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor": 30045.6,
+          "pct": 3.8,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor": 20930.4,
+          "pct": 2.6,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor": 20741.37,
+          "pct": 2.6,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (OFERTA GRATIS)",
+          "valor": 0.05,
+          "pct": 0.0,
+          "segmento": "C"
+        }
+      ],
+      "top_movers": [
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor_actual": 20741.37,
+          "delta": 20741.37,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor_actual": 20930.4,
+          "delta": 20930.4,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor_actual": 30045.6,
+          "delta": 30045.6,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor_actual": 47231.64,
+          "delta": 47231.64,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor_actual": 87937.51,
+          "delta": 87937.51,
+          "yoy_pct": null
+        },
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor_actual": 591175.4,
+          "delta": 591175.4,
+          "yoy_pct": null
+        }
+      ],
+      "matriz_portafolio": [
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor": 591175.4,
+          "pct_participacion": 74.1,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor": 87937.51,
+          "pct_participacion": 11.0,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor": 47231.64,
+          "pct_participacion": 5.9,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor": 30045.6,
+          "pct_participacion": 3.8,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor": 20930.4,
+          "pct_participacion": 2.6,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor": 20741.37,
+          "pct_participacion": 2.6,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (OFERTA GRATIS)",
+          "valor": 0.05,
+          "pct_participacion": 0.0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [
+        {
+          "codcliente": "4478",
+          "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+          "valor": 85373.76
+        },
+        {
+          "codcliente": "2877",
+          "nombre": "XOCHILT BALTODANO",
+          "valor": 55046.4
+        },
+        {
+          "codcliente": "3851",
+          "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+          "valor": 42477.93
+        },
+        {
+          "codcliente": "6042",
+          "nombre": "GARCIA, FARMACIA",
+          "valor": 38532.48
+        },
+        {
+          "codcliente": "3477",
+          "nombre": "ALEXANDER, FARMACIA - PUERTO CABEZAS",
+          "valor": 34404.0
+        }
+      ],
+      "serie_multianual": {
+        "2026": [
+          500147.96,
+          798061.97
+        ]
+      },
+      "momentum_mensual": [
+        {
+          "mes": 4,
+          "valor": 500147.96,
+          "mom_pct": 0.0
+        },
+        {
+          "mes": 5,
+          "valor": 297914.01,
+          "mom_pct": -40.4
+        }
+      ],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Proponer impulso conjunto para CERENERVON ELIXIR JARABE 250ML (INFARMA), MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "detalle": "Principales motores de crecimiento del portafolio en el periodo.",
+          "capitulo_origen": "04",
+          "evidencia": {
+            "campo": "top_movers (positivos, top 2)",
+            "valor": [
+              {
+                "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+                "valor_actual": 591175.4,
+                "delta": 591175.4,
+                "yoy_pct": null
+              },
+              {
+                "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+                "valor_actual": 87937.51,
+                "delta": 87937.51,
+                "yoy_pct": null
+              }
+            ]
+          },
+          "dueno": "Dirección Comercial",
+          "plazo": "Próximo ciclo de campaña",
+          "prioridad": "Media"
+        },
+        {
+          "titulo": "Dar seguimiento prioritario a clientes nuevos con potencial B (GUANUCA, XOCHILT BALTODANO, CUBA, GARCIA, ALEXANDER)",
+          "detalle": "5 cliente(s) nuevo(s) ya alcanzan el piso de venta del Segmento B.",
+          "capitulo_origen": "05",
+          "evidencia": {
+            "campo": "clientes_nuevos_con_potencial_b",
+            "valor": [
+              {
+                "codcliente": "4478",
+                "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+                "nombre_corto": "GUANUCA",
+                "valor": 85373.76
+              },
+              {
+                "codcliente": "2877",
+                "nombre": "XOCHILT BALTODANO",
+                "nombre_corto": "XOCHILT BALTODANO",
+                "valor": 55046.4
+              },
+              {
+                "codcliente": "3851",
+                "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+                "nombre_corto": "CUBA",
+                "valor": 42477.93
+              },
+              {
+                "codcliente": "6042",
+                "nombre": "GARCIA, FARMACIA",
+                "nombre_corto": "GARCIA",
+                "valor": 38532.48
+              },
+              {
+                "codcliente": "3477",
+                "nombre": "ALEXANDER, FARMACIA - PUERTO CABEZAS",
+                "nombre_corto": "ALEXANDER",
+                "valor": 34404.0
+              }
+            ]
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Revisión mensual",
+          "prioridad": "Media"
+        },
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 500147.96,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 297914.01,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": [
+        {
+          "codcliente": "4478",
+          "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+          "nombre_corto": "GUANUCA",
+          "valor": 85373.76
+        },
+        {
+          "codcliente": "2877",
+          "nombre": "XOCHILT BALTODANO",
+          "nombre_corto": "XOCHILT BALTODANO",
+          "valor": 55046.4
+        },
+        {
+          "codcliente": "3851",
+          "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+          "nombre_corto": "CUBA",
+          "valor": 42477.93
+        },
+        {
+          "codcliente": "6042",
+          "nombre": "GARCIA, FARMACIA",
+          "nombre_corto": "GARCIA",
+          "valor": 38532.48
+        },
+        {
+          "codcliente": "3477",
+          "nombre": "ALEXANDER, FARMACIA - PUERTO CABEZAS",
+          "nombre_corto": "ALEXANDER",
+          "valor": 34404.0
+        }
+      ]
+    },
+    "2026-06-30": {
+      "fecha_operativa": "2026-06-30",
+      "kpis": {
+        "venta_ytd": 999763.29,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 999763.29,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 260,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 999763.29,
+        "actual": 999763.29,
+        "n_perdidos": 0,
+        "n_nuevos": 260,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 38,
+          "venta": 703746.97,
+          "pct_venta": 70.39135933866905
+        },
+        {
+          "segmento": "B",
+          "entidades": 83,
+          "venta": 196624.91,
+          "pct_venta": 19.667146410226767
+        },
+        {
+          "segmento": "C",
+          "entidades": 139,
+          "venta": 99391.41,
+          "pct_venta": 9.941494251104178
+        }
+      ],
+      "mix_marca": [
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor": 745764.04,
+          "pct": 74.6,
+          "segmento": "A"
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor": 102023.61,
+          "pct": 10.2,
+          "segmento": "B"
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor": 57753.54,
+          "pct": 5.8,
+          "segmento": "B"
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor": 34482.24,
+          "pct": 3.4,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor": 31880.1,
+          "pct": 3.2,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor": 27859.71,
+          "pct": 2.8,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (OFERTA GRATIS)",
+          "valor": 0.05,
+          "pct": 0.0,
+          "segmento": "C"
+        }
+      ],
+      "top_movers": [
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor_actual": 27859.71,
+          "delta": 27859.71,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor_actual": 31880.1,
+          "delta": 31880.1,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor_actual": 34482.24,
+          "delta": 34482.24,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor_actual": 57753.54,
+          "delta": 57753.54,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor_actual": 102023.61,
+          "delta": 102023.61,
+          "yoy_pct": null
+        },
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor_actual": 745764.04,
+          "delta": 745764.04,
+          "yoy_pct": null
+        }
+      ],
+      "matriz_portafolio": [
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor": 745764.04,
+          "pct_participacion": 74.6,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor": 102023.61,
+          "pct_participacion": 10.2,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor": 57753.54,
+          "pct_participacion": 5.8,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor": 34482.24,
+          "pct_participacion": 3.4,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor": 31880.1,
+          "pct_participacion": 3.2,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor": 27859.71,
+          "pct_participacion": 2.8,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (OFERTA GRATIS)",
+          "valor": 0.05,
+          "pct_participacion": 0.0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [
+        {
+          "codcliente": "4478",
+          "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+          "valor": 123906.24
+        },
+        {
+          "codcliente": "3213",
+          "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "valor": 55132.88
+        },
+        {
+          "codcliente": "2877",
+          "nombre": "XOCHILT BALTODANO",
+          "valor": 55046.4
+        },
+        {
+          "codcliente": "3851",
+          "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+          "valor": 42477.93
+        },
+        {
+          "codcliente": "6042",
+          "nombre": "GARCIA, FARMACIA",
+          "valor": 38532.48
+        }
+      ],
+      "serie_multianual": {
+        "2026": [
+          500147.96,
+          798061.97,
+          999763.29
+        ]
+      },
+      "momentum_mensual": [
+        {
+          "mes": 4,
+          "valor": 500147.96,
+          "mom_pct": 0.0
+        },
+        {
+          "mes": 5,
+          "valor": 297914.01,
+          "mom_pct": -40.4
+        },
+        {
+          "mes": 6,
+          "valor": 201701.32,
+          "mom_pct": -32.3
+        }
+      ],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Proponer impulso conjunto para CERENERVON ELIXIR JARABE 250ML (INFARMA), MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "detalle": "Principales motores de crecimiento del portafolio en el periodo.",
+          "capitulo_origen": "04",
+          "evidencia": {
+            "campo": "top_movers (positivos, top 2)",
+            "valor": [
+              {
+                "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+                "valor_actual": 745764.04,
+                "delta": 745764.04,
+                "yoy_pct": null
+              },
+              {
+                "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+                "valor_actual": 102023.61,
+                "delta": 102023.61,
+                "yoy_pct": null
+              }
+            ]
+          },
+          "dueno": "Dirección Comercial",
+          "plazo": "Próximo ciclo de campaña",
+          "prioridad": "Media"
+        },
+        {
+          "titulo": "Dar seguimiento prioritario a clientes nuevos con potencial B (GUANUCA, DISTRIBUIDORA PEREZ MATUTE - JALAPA, XOCHILT BALTODANO, CUBA, GARCIA)",
+          "detalle": "5 cliente(s) nuevo(s) ya alcanzan el piso de venta del Segmento B.",
+          "capitulo_origen": "05",
+          "evidencia": {
+            "campo": "clientes_nuevos_con_potencial_b",
+            "valor": [
+              {
+                "codcliente": "4478",
+                "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+                "nombre_corto": "GUANUCA",
+                "valor": 123906.24
+              },
+              {
+                "codcliente": "3213",
+                "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+                "nombre_corto": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+                "valor": 55132.88
+              },
+              {
+                "codcliente": "2877",
+                "nombre": "XOCHILT BALTODANO",
+                "nombre_corto": "XOCHILT BALTODANO",
+                "valor": 55046.4
+              },
+              {
+                "codcliente": "3851",
+                "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+                "nombre_corto": "CUBA",
+                "valor": 42477.93
+              },
+              {
+                "codcliente": "6042",
+                "nombre": "GARCIA, FARMACIA",
+                "nombre_corto": "GARCIA",
+                "valor": 38532.48
+              }
+            ]
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Revisión mensual",
+          "prioridad": "Media"
+        },
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 500147.96,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 297914.01,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 201701.32,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": [
+        {
+          "codcliente": "4478",
+          "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+          "nombre_corto": "GUANUCA",
+          "valor": 123906.24
+        },
+        {
+          "codcliente": "3213",
+          "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "nombre_corto": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "valor": 55132.88
+        },
+        {
+          "codcliente": "2877",
+          "nombre": "XOCHILT BALTODANO",
+          "nombre_corto": "XOCHILT BALTODANO",
+          "valor": 55046.4
+        },
+        {
+          "codcliente": "3851",
+          "nombre": "CUBA, FARMACIA - WIWILI DE JINOTEGA",
+          "nombre_corto": "CUBA",
+          "valor": 42477.93
+        },
+        {
+          "codcliente": "6042",
+          "nombre": "GARCIA, FARMACIA",
+          "nombre_corto": "GARCIA",
+          "valor": 38532.48
+        }
+      ]
+    },
+    "2026-07-31": {
+      "fecha_operativa": "2026-07-31",
+      "kpis": {
+        "venta_ytd": 1339649.65,
+        "venta_ytd_anterior": 0.0,
+        "yoy_ytd_pct": null,
+        "mat_r12": 1339649.65,
+        "mat_r12_anterior": 0.0,
+        "yoy_mat_pct": null,
+        "clientes_activos": 281,
+        "clientes_activos_anterior": 0,
+        "churn_pct": null
+      },
+      "waterfall": {
+        "base_anterior": 0.0,
+        "perdidos": -0.0,
+        "volumen_retenidos": 0.0,
+        "nuevos": 1339649.65,
+        "actual": 1339649.65,
+        "n_perdidos": 0,
+        "n_nuevos": 281,
+        "n_retenidos": 0
+      },
+      "abc_clientes": [
+        {
+          "segmento": "A",
+          "entidades": 33,
+          "venta": 937761.25,
+          "pct_venta": 70.00048482825342
+        },
+        {
+          "segmento": "B",
+          "entidades": 82,
+          "venta": 268744.26,
+          "pct_venta": 20.060786788545798
+        },
+        {
+          "segmento": "C",
+          "entidades": 166,
+          "venta": 133144.14,
+          "pct_venta": 9.938728383200788
+        }
+      ],
+      "mix_marca": [
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor": 1001615.12,
+          "pct": 74.8,
+          "segmento": "A"
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor": 141665.92,
+          "pct": 10.6,
+          "segmento": "B"
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor": 64300.5,
+          "pct": 4.8,
+          "segmento": "B"
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor": 47210.14,
+          "pct": 3.5,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor": 45995.2,
+          "pct": 3.4,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor": 38862.72,
+          "pct": 2.9,
+          "segmento": "C"
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (OFERTA GRATIS)",
+          "valor": 0.05,
+          "pct": 0.0,
+          "segmento": "C"
+        }
+      ],
+      "top_movers": [
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor_actual": 38862.72,
+          "delta": 38862.72,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor_actual": 45995.2,
+          "delta": 45995.2,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor_actual": 47210.14,
+          "delta": 47210.14,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor_actual": 64300.5,
+          "delta": 64300.5,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor_actual": 141665.92,
+          "delta": 141665.92,
+          "yoy_pct": null
+        },
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor_actual": 1001615.12,
+          "delta": 1001615.12,
+          "yoy_pct": null
+        }
+      ],
+      "matriz_portafolio": [
+        {
+          "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+          "valor": 1001615.12,
+          "pct_participacion": 74.8,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "valor": 141665.92,
+          "pct_participacion": 10.6,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (INFARMA)",
+          "valor": 64300.5,
+          "pct_participacion": 4.8,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA MANZANILLA UNGÜENTO 38 GRAMOS (INFARMA)",
+          "valor": 47210.14,
+          "pct_participacion": 3.5,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA UNGÜENTO 30 GRAMOS (INFARMA)",
+          "valor": 45995.2,
+          "pct_participacion": 3.4,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA INFANTIL JARABE FRAMBUESA 120ML (INFARMA)",
+          "valor": 38862.72,
+          "pct_participacion": 2.9,
+          "yoy_pct": null
+        },
+        {
+          "marca": "MENTOLINA JARABE ADULTO 120ML (OFERTA GRATIS)",
+          "valor": 0.05,
+          "pct_participacion": 0.0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_perdidos_por_segmento": {},
+      "clientes_perdidos_detalle": [],
+      "top_clientes": [
+        {
+          "codcliente": "4478",
+          "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+          "valor": 151429.44
+        },
+        {
+          "codcliente": "6041",
+          "nombre": "DISTPALMED, DISTRIBUIDORA DE MEDICAMENTOS - JALAPA",
+          "valor": 110398.38
+        },
+        {
+          "codcliente": "3213",
+          "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "valor": 55132.88
+        },
+        {
+          "codcliente": "2877",
+          "nombre": "XOCHILT BALTODANO",
+          "valor": 55046.4
+        },
+        {
+          "codcliente": "5521",
+          "nombre": "DIANA ANDRADE MONDRAGON - MEDICINA POPULAR BARA",
+          "valor": 49541.76
+        }
+      ],
+      "serie_multianual": {
+        "2026": [
+          500147.96,
+          798061.97,
+          999763.29,
+          1339649.65
+        ]
+      },
+      "momentum_mensual": [
+        {
+          "mes": 4,
+          "valor": 500147.96,
+          "mom_pct": 0.0
+        },
+        {
+          "mes": 5,
+          "valor": 297914.01,
+          "mom_pct": -40.4
+        },
+        {
+          "mes": 6,
+          "valor": 201701.32,
+          "mom_pct": -32.3
+        },
+        {
+          "mes": 7,
+          "valor": 339886.36,
+          "mom_pct": 68.5
+        }
+      ],
+      "qoq": null,
+      "recomendaciones": [
+        {
+          "titulo": "Proponer impulso conjunto para CERENERVON ELIXIR JARABE 250ML (INFARMA), MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+          "detalle": "Principales motores de crecimiento del portafolio en el periodo.",
+          "capitulo_origen": "04",
+          "evidencia": {
+            "campo": "top_movers (positivos, top 2)",
+            "valor": [
+              {
+                "marca": "CERENERVON ELIXIR JARABE 250ML (INFARMA)",
+                "valor_actual": 1001615.12,
+                "delta": 1001615.12,
+                "yoy_pct": null
+              },
+              {
+                "marca": "MENTOLINA UNGÜENTO 12G LATA DISP X 12 UNDS (INFARMA)",
+                "valor_actual": 141665.92,
+                "delta": 141665.92,
+                "yoy_pct": null
+              }
+            ]
+          },
+          "dueno": "Dirección Comercial",
+          "plazo": "Próximo ciclo de campaña",
+          "prioridad": "Media"
+        },
+        {
+          "titulo": "Dar seguimiento prioritario a clientes nuevos con potencial B (GUANUCA, DISTPALMED, DISTRIBUIDORA PEREZ MATUTE - JALAPA, XOCHILT BALTODANO, DIANA ANDRADE MONDRAGON - MEDICINA POPULAR BARA)",
+          "detalle": "5 cliente(s) nuevo(s) ya alcanzan el piso de venta del Segmento B.",
+          "capitulo_origen": "05",
+          "evidencia": {
+            "campo": "clientes_nuevos_con_potencial_b",
+            "valor": [
+              {
+                "codcliente": "4478",
+                "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+                "nombre_corto": "GUANUCA",
+                "valor": 151429.44
+              },
+              {
+                "codcliente": "6041",
+                "nombre": "DISTPALMED, DISTRIBUIDORA DE MEDICAMENTOS - JALAPA",
+                "nombre_corto": "DISTPALMED",
+                "valor": 110398.38
+              },
+              {
+                "codcliente": "3213",
+                "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+                "nombre_corto": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+                "valor": 55132.88
+              },
+              {
+                "codcliente": "2877",
+                "nombre": "XOCHILT BALTODANO",
+                "nombre_corto": "XOCHILT BALTODANO",
+                "valor": 55046.4
+              },
+              {
+                "codcliente": "5521",
+                "nombre": "DIANA ANDRADE MONDRAGON - MEDICINA POPULAR BARA",
+                "nombre_corto": "DIANA ANDRADE MONDRAGON - MEDICINA POPULAR BARA",
+                "valor": 49541.76
+              }
+            ]
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Revisión mensual",
+          "prioridad": "Media"
+        },
+        {
+          "titulo": "Dar seguimiento semanal al periodo más reciente",
+          "detalle": "Recomendación operativa fija — confirmar si la tendencia del último mes se sostiene antes del próximo cierre.",
+          "capitulo_origen": "03",
+          "evidencia": {
+            "campo": "recomendación de proceso, no derivada de un umbral",
+            "valor": null
+          },
+          "dueno": "Analista Comercial",
+          "plazo": "Próximas 4 semanas",
+          "prioridad": "Media"
+        }
+      ],
+      "hallazgos": {
+        "02": [],
+        "03": [],
+        "04": [
+          {
+            "id": "cuadrante_motores_crecimiento_vacio",
+            "capitulo_origen": "04",
+            "tipo": "riesgo",
+            "texto": "Ningún producto con participación ≥15% está creciendo.",
+            "evidencia": {
+              "campo": "matriz_portafolio filtrado por pct_participacion>=15.0",
+              "valor": []
+            },
+            "implicacion": "El cuadrante de motores de crecimiento está vacío — el portafolio migra hacia deterioro si no se renueva."
+          }
+        ],
+        "05": []
+      },
+      "yoy_mensual": [
+        {
+          "mes": 1,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 2,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 3,
+          "valor": 0,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 4,
+          "valor": 500147.96,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 5,
+          "valor": 297914.01,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 6,
+          "valor": 201701.32,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        },
+        {
+          "mes": 7,
+          "valor": 339886.36,
+          "valor_anio_anterior": 0,
+          "yoy_pct": null
+        }
+      ],
+      "clientes_pct_variacion_retenidos": null,
+      "clientes_nuevos_potencial_b": [
+        {
+          "codcliente": "4478",
+          "nombre": "GUANUCA, FARMACIA - MATAGALPA",
+          "nombre_corto": "GUANUCA",
+          "valor": 151429.44
+        },
+        {
+          "codcliente": "6041",
+          "nombre": "DISTPALMED, DISTRIBUIDORA DE MEDICAMENTOS - JALAPA",
+          "nombre_corto": "DISTPALMED",
+          "valor": 110398.38
+        },
+        {
+          "codcliente": "3213",
+          "nombre": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "nombre_corto": "DISTRIBUIDORA PEREZ MATUTE - JALAPA",
+          "valor": 55132.88
+        },
+        {
+          "codcliente": "2877",
+          "nombre": "XOCHILT BALTODANO",
+          "nombre_corto": "XOCHILT BALTODANO",
+          "valor": 55046.4
+        },
+        {
+          "codcliente": "5521",
+          "nombre": "DIANA ANDRADE MONDRAGON - MEDICINA POPULAR BARA",
+          "nombre_corto": "DIANA ANDRADE MONDRAGON - MEDICINA POPULAR BARA",
+          "valor": 49541.76
+        }
+      ]
+    }
+  }
+}
