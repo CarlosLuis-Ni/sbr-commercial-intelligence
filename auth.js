@@ -92,8 +92,9 @@ function configurarRestriccionProveedor(perfil) {
       });
     }
 
-    // Evita que la aplicación cargue accidentalmente otro JSON de proveedor
-    // si una navegación interna intentara solicitarlo.
+    // Para proveedores, el SBR solo expone la fotografía de la fecha operativa
+    // más reciente. Los snapshots históricos siguen existiendo para SUINSA,
+    // pero no llegan al navegador del usuario proveedor.
     const match = pathname.match(/\/data\/([^/]+)\.json$/);
     if (match && window.SBR_ALLOWED_PROVIDER_ID) {
       const idSolicitado = match[1];
@@ -103,6 +104,28 @@ function configurarRestriccionProveedor(perfil) {
           headers: { "Content-Type": "application/json" }
         });
       }
+
+      const response = await window.__sbrFetchOriginal(input, init);
+      if (!response.ok) return response;
+
+      const payload = await response.json();
+      const fechas = Object.keys(payload.snapshots || {}).sort();
+      const ultimaFecha = fechas[fechas.length - 1];
+
+      if (!ultimaFecha) {
+        return new Response(JSON.stringify({ ...payload, snapshots: {} }), {
+          status: response.status,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      return new Response(JSON.stringify({
+        ...payload,
+        snapshots: { [ultimaFecha]: payload.snapshots[ultimaFecha] }
+      }), {
+        status: response.status,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     return window.__sbrFetchOriginal(input, init);
