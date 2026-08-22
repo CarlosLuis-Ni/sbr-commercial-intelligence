@@ -20,6 +20,10 @@ window.SBR_AUTH_READY = new Promise(resolve => {
   window.__resolveSbrAuth = resolve;
 });
 
+function crearTimeout(ms, mensaje) {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error(mensaje)), ms));
+}
+
 function mostrarLogin(mensaje = "") {
   document.body.classList.add("auth-required");
   document.getElementById("app").innerHTML = `
@@ -52,13 +56,13 @@ function mostrarLogin(mensaje = "") {
     const password = document.getElementById("login-password").value;
 
     try {
-      // Evita que una incidencia de red deje el botón bloqueado indefinidamente.
       const loginPromise = supabaseClient.auth.signInWithPassword({ email, password });
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("TIMEOUT_AUTH")), 15000)
-      );
-      const { data, error: authError } = await Promise.race([loginPromise, timeoutPromise]);
+      const loginResult = await Promise.race([
+        loginPromise,
+        crearTimeout(15000, "TIMEOUT_AUTH")
+      ]);
 
+      const { data, error: authError } = loginResult;
       if (authError || !data.user) {
         errorBox.textContent = authError?.message || "No fue posible iniciar sesión.";
         button.disabled = false;
@@ -66,10 +70,16 @@ function mostrarLogin(mensaje = "") {
         return;
       }
 
-      await validarPerfilYEntrar(data.user);
+      button.textContent = "Validando perfil…";
+      await Promise.race([
+        validarPerfilYEntrar(data.user),
+        crearTimeout(15000, "TIMEOUT_PROFILE")
+      ]);
     } catch (err) {
       if (err?.message === "TIMEOUT_AUTH") {
-        errorBox.textContent = "El servicio de autenticación no respondió en 15 segundos. Revisa la conexión y vuelve a intentarlo.";
+        errorBox.textContent = "Supabase Auth no respondió en 15 segundos. El problema está en la conexión/autenticación.";
+      } else if (err?.message === "TIMEOUT_PROFILE") {
+        errorBox.textContent = "La autenticación respondió, pero el perfil SBR no terminó de validarse en 15 segundos. El siguiente paso es revisar sbr_profiles/RLS.";
       } else {
         errorBox.textContent = "Error de conexión con el servicio de autenticación. Intenta nuevamente.";
       }
