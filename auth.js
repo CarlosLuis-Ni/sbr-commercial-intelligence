@@ -66,6 +66,7 @@ function mostrarLogin(mensaje = "") {
 
 function configurarRestriccionProveedor(perfil) {
   window.SBR_ALLOWED_PROVIDER = perfil.rol === "proveedor" ? perfil.proveedor : null;
+  window.SBR_ALLOWED_PROVIDER_ID = null;
 
   // Primera capa de autorización: el manifiesto que consume app.js se filtra
   // según el perfil autenticado. Gerencia conserva acceso completo.
@@ -79,9 +80,12 @@ function configurarRestriccionProveedor(perfil) {
     if (pathname.endsWith("/data/proveedores.json") && window.SBR_ALLOWED_PROVIDER) {
       const response = await window.__sbrFetchOriginal(input, init);
       const manifest = await response.json();
-      const permitidos = manifest.proveedores.filter(p =>
+      const permitido = manifest.proveedores.find(p =>
         String(p.nombre_display).trim().toUpperCase() === String(window.SBR_ALLOWED_PROVIDER).trim().toUpperCase()
       );
+      const permitidos = permitido ? [permitido] : [];
+      window.SBR_ALLOWED_PROVIDER_ID = permitido?.id || null;
+
       return new Response(JSON.stringify({ ...manifest, proveedores: permitidos }), {
         status: response.status,
         headers: { "Content-Type": "application/json" }
@@ -91,10 +95,9 @@ function configurarRestriccionProveedor(perfil) {
     // Evita que la aplicación cargue accidentalmente otro JSON de proveedor
     // si una navegación interna intentara solicitarlo.
     const match = pathname.match(/\/data\/([^/]+)\.json$/);
-    if (match && window.SBR_ALLOWED_PROVIDER) {
+    if (match && window.SBR_ALLOWED_PROVIDER_ID) {
       const idSolicitado = match[1];
-      const permitido = String(window.SBR_ALLOWED_PROVIDER).trim().toUpperCase();
-      if (idSolicitado.toUpperCase() !== permitido) {
+      if (idSolicitado.toLowerCase() !== String(window.SBR_ALLOWED_PROVIDER_ID).toLowerCase()) {
         return new Response(JSON.stringify({ error: "Proveedor no autorizado" }), {
           status: 403,
           headers: { "Content-Type": "application/json" }
