@@ -64,6 +64,48 @@ function mostrarLogin(mensaje = "") {
   });
 }
 
+function configurarRestriccionProveedor(perfil) {
+  window.SBR_ALLOWED_PROVIDER = perfil.rol === "proveedor" ? perfil.proveedor : null;
+
+  // Primera capa de autorización: el manifiesto que consume app.js se filtra
+  // según el perfil autenticado. Gerencia conserva acceso completo.
+  if (window.__sbrFetchOriginal) return;
+  window.__sbrFetchOriginal = window.fetch.bind(window);
+
+  window.fetch = async function(input, init) {
+    const requestUrl = new URL(input instanceof Request ? input.url : input, window.location.href);
+    const pathname = requestUrl.pathname;
+
+    if (pathname.endsWith("/data/proveedores.json") && window.SBR_ALLOWED_PROVIDER) {
+      const response = await window.__sbrFetchOriginal(input, init);
+      const manifest = await response.json();
+      const permitidos = manifest.proveedores.filter(p =>
+        String(p.nombre_display).trim().toUpperCase() === String(window.SBR_ALLOWED_PROVIDER).trim().toUpperCase()
+      );
+      return new Response(JSON.stringify({ ...manifest, proveedores: permitidos }), {
+        status: response.status,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Evita que la aplicación cargue accidentalmente otro JSON de proveedor
+    // si una navegación interna intentara solicitarlo.
+    const match = pathname.match(/\/data\/([^/]+)\.json$/);
+    if (match && window.SBR_ALLOWED_PROVIDER) {
+      const idSolicitado = match[1];
+      const permitido = String(window.SBR_ALLOWED_PROVIDER).trim().toUpperCase();
+      if (idSolicitado.toUpperCase() !== permitido) {
+        return new Response(JSON.stringify({ error: "Proveedor no autorizado" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+    }
+
+    return window.__sbrFetchOriginal(input, init);
+  };
+}
+
 async function validarPerfilYEntrar(user) {
   const { data: perfil, error } = await supabaseClient
     .from("sbr_profiles")
@@ -95,7 +137,14 @@ async function validarPerfilYEntrar(user) {
     return;
   }
 
+  if (perfil.rol === "proveedor" && !perfil.proveedor) {
+    await supabaseClient.auth.signOut();
+    mostrarLogin("Tu perfil SBR no tiene un proveedor asignado. Contacta al administrador.");
+    return;
+  }
+
   window.SBR_CURRENT_USER = { ...user, profile: perfil };
+  configurarRestriccionProveedor(perfil);
   document.body.classList.remove("auth-required");
   cargarAplicacion();
 }
