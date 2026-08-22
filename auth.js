@@ -84,12 +84,40 @@ async function validarPerfilYEntrar(user) {
   cargarAplicacion();
 }
 
+function agregarBotonCerrarSesion() {
+  if (document.getElementById("sbr-logout")) return;
+  const button = document.createElement("button");
+  button.id = "sbr-logout";
+  button.type = "button";
+  button.textContent = "Cerrar sesión";
+  Object.assign(button.style, {
+    position: "fixed",
+    top: "18px",
+    right: "18px",
+    zIndex: "9999",
+    border: "1px solid #C9CBC4",
+    background: "#FAFAF8",
+    color: "#6B7178",
+    padding: "7px 11px",
+    font: "500 11px Inter, sans-serif",
+    cursor: "pointer"
+  });
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    await supabaseClient.auth.signOut();
+  });
+  document.body.appendChild(button);
+}
+
 function cargarAplicacion() {
   if (window.__sbrAppLoaded) return;
   window.__sbrAppLoaded = true;
   const script = document.createElement("script");
   script.src = `app.js?v=${Date.now()}`;
-  script.onload = () => window.__resolveSbrAuth(window.SBR_CURRENT_USER);
+  script.onload = () => {
+    agregarBotonCerrarSesion();
+    window.__resolveSbrAuth(window.SBR_CURRENT_USER);
+  };
   script.onerror = () => {
     document.getElementById("app").innerHTML = `<div class="loading">No fue posible cargar la aplicación SBR.</div>`;
   };
@@ -106,7 +134,7 @@ async function iniciarAutenticacion() {
   }
 }
 
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
+supabaseClient.auth.onAuthStateChange(async (event) => {
   if (event === "SIGNED_OUT") {
     window.location.reload();
   }
