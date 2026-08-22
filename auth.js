@@ -1,7 +1,6 @@
 /*
  * SUINSA SBR — Autenticación
  * Login con Supabase Auth + validación del perfil activo en public.sbr_profiles.
- * No contiene la Secret key; la Publishable key está diseñada para uso en frontend.
  */
 
 const SUPABASE_URL = "https://vagahrksyoniwutgqztl.supabase.co";
@@ -14,7 +13,7 @@ window.SBR_AUTH_READY = new Promise(resolve => {
   window.__resolveSbrAuth = resolve;
 });
 
-function mostrarLogin() {
+function mostrarLogin(mensaje = "") {
   document.body.classList.add("auth-required");
   document.getElementById("app").innerHTML = `
     <div class="auth-shell">
@@ -29,7 +28,7 @@ function mostrarLogin() {
           <label>Contraseña</label>
           <input id="login-password" type="password" autocomplete="current-password" required placeholder="••••••••">
           <button type="submit">Ingresar al SBR</button>
-          <div id="login-error" class="auth-error" role="alert"></div>
+          <div id="login-error" class="auth-error" role="alert">${mensaje}</div>
         </form>
       </div>
     </div>`;
@@ -37,24 +36,31 @@ function mostrarLogin() {
   document.getElementById("login-form").addEventListener("submit", async event => {
     event.preventDefault();
     const button = event.currentTarget.querySelector("button");
-    const error = document.getElementById("login-error");
+    const errorBox = document.getElementById("login-error");
     button.disabled = true;
     button.textContent = "Verificando…";
-    error.textContent = "";
+    errorBox.textContent = "";
 
     const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value;
 
-    const { data, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
+    try {
+      const { data, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-    if (authError || !data.user) {
-      error.textContent = "Correo o contraseña incorrectos. Verifica tus credenciales.";
+      if (authError || !data.user) {
+        errorBox.textContent = authError?.message || "No fue posible iniciar sesión.";
+        button.disabled = false;
+        button.textContent = "Ingresar al SBR";
+        return;
+      }
+
+      await validarPerfilYEntrar(data.user);
+    } catch (err) {
+      errorBox.textContent = "Error de conexión con el servicio de autenticación. Intenta nuevamente.";
       button.disabled = false;
       button.textContent = "Ingresar al SBR";
-      return;
+      console.error("SBR login error", err);
     }
-
-    await validarPerfilYEntrar(data.user);
   });
 }
 
@@ -65,17 +71,27 @@ async function validarPerfilYEntrar(user) {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error || !perfil || perfil.activo !== true) {
-    await supabaseClient.auth.signOut();
+  if (error) {
+    console.error("SBR profile query error", error);
     const errorBox = document.getElementById("login-error");
-    if (errorBox) {
-      errorBox.textContent = "Tu usuario no tiene un perfil SBR activo. Contacta al administrador.";
-    }
     const button = document.querySelector("#login-form button");
+    if (errorBox) errorBox.textContent = "El acceso fue autenticado, pero no se pudo validar tu perfil SBR. Verifica la configuración de acceso.";
     if (button) {
       button.disabled = false;
       button.textContent = "Ingresar al SBR";
     }
+    return;
+  }
+
+  if (!perfil) {
+    await supabaseClient.auth.signOut();
+    mostrarLogin("Tu usuario no tiene un perfil SBR configurado.");
+    return;
+  }
+
+  if (perfil.activo !== true) {
+    await supabaseClient.auth.signOut();
+    mostrarLogin("Tu usuario SBR está inactivo. Contacta al administrador.");
     return;
   }
 
@@ -91,16 +107,9 @@ function agregarBotonCerrarSesion() {
   button.type = "button";
   button.textContent = "Cerrar sesión";
   Object.assign(button.style, {
-    position: "fixed",
-    top: "18px",
-    right: "18px",
-    zIndex: "9999",
-    border: "1px solid #C9CBC4",
-    background: "#FAFAF8",
-    color: "#6B7178",
-    padding: "7px 11px",
-    font: "500 11px Inter, sans-serif",
-    cursor: "pointer"
+    position: "fixed", top: "18px", right: "18px", zIndex: "9999",
+    border: "1px solid #C9CBC4", background: "#FAFAF8", color: "#6B7178",
+    padding: "7px 11px", font: "500 11px Inter, sans-serif", cursor: "pointer"
   });
   button.addEventListener("click", async () => {
     button.disabled = true;
@@ -119,17 +128,24 @@ function cargarAplicacion() {
     window.__resolveSbrAuth(window.SBR_CURRENT_USER);
   };
   script.onerror = () => {
+    window.__sbrAppLoaded = false;
     document.getElementById("app").innerHTML = `<div class="loading">No fue posible cargar la aplicación SBR.</div>`;
   };
   document.body.appendChild(script);
 }
 
 async function iniciarAutenticacion() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session?.user) {
-    await validarPerfilYEntrar(session.user);
-  } else {
-    mostrarLogin();
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session?.user) {
+      await validarPerfilYEntrar(session.user);
+    } else {
+      mostrarLogin();
+      window.__resolveSbrAuth(null);
+    }
+  } catch (err) {
+    console.error("SBR auth initialization error", err);
+    mostrarLogin("No fue posible conectar con el servicio de acceso. Recarga la página e intenta nuevamente.");
     window.__resolveSbrAuth(null);
   }
 }
