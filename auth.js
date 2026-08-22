@@ -150,14 +150,11 @@ function configurarRestriccionProveedor(perfil) {
 }
 
 async function validarPerfilYEntrar(user) {
-  const { data: perfil, error } = await supabaseClient
-    .from("sbr_profiles")
-    .select("nombre, rol, proveedor, activo")
-    .eq("id", user.id)
-    .maybeSingle();
+  const { data: perfiles, error } = await supabaseClient.rpc("get_my_sbr_profile");
+  const perfil = Array.isArray(perfiles) ? (perfiles[0] || null) : perfiles;
 
   if (error) {
-    console.error("SBR profile query error", error);
+    console.error("SBR profile RPC error", error);
     const errorBox = document.getElementById("login-error");
     const button = document.querySelector("#login-form button");
     if (errorBox) errorBox.textContent = "El acceso fue autenticado, pero no se pudo validar tu perfil SBR. Verifica la configuración de acceso.";
