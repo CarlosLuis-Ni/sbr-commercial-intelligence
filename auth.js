@@ -150,7 +150,11 @@ function configurarRestriccionProveedor(perfil) {
 }
 
 async function validarPerfilYEntrar(user) {
-  const { data: perfiles, error } = await supabaseClient.rpc("get_my_sbr_profile");
+  const profilePromise = supabaseClient.rpc("get_my_sbr_profile");
+  const { data: perfiles, error } = await Promise.race([
+    profilePromise,
+    crearTimeout(15000, "TIMEOUT_PROFILE_RPC")
+  ]);
   const perfil = Array.isArray(perfiles) ? (perfiles[0] || null) : perfiles;
 
   if (error) {
@@ -225,7 +229,13 @@ function cargarAplicacion() {
 
 async function iniciarAutenticacion() {
   try {
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    // Importante: getSession() no debe poder dejar la pantalla inicial bloqueada indefinidamente.
+    const sessionResult = await Promise.race([
+      supabaseClient.auth.getSession(),
+      crearTimeout(10000, "TIMEOUT_SESSION")
+    ]);
+    const { data: { session } } = sessionResult;
+
     if (session?.user) {
       await validarPerfilYEntrar(session.user);
     } else {
@@ -234,7 +244,11 @@ async function iniciarAutenticacion() {
     }
   } catch (err) {
     console.error("SBR auth initialization error", err);
-    mostrarLogin("No fue posible conectar con el servicio de acceso. Recarga la página e intenta nuevamente.");
+    mostrarLogin(
+      err?.message === "TIMEOUT_SESSION"
+        ? "La sesión de Supabase no respondió en 10 segundos. Puedes intentar iniciar sesión nuevamente."
+        : "No fue posible conectar con el servicio de acceso. Recarga la página e intenta nuevamente."
+    );
     window.__resolveSbrAuth(null);
   }
 }
