@@ -1,6 +1,13 @@
 /*
  * SUINSA SBR — Autenticación
  * Login con Supabase Auth + validación del perfil activo en public.sbr_profiles.
+ *
+ * Blindaje de datos:
+ * - app.js ya no consume directamente data/*.json.
+ * - Las lecturas pasan por la Edge Function sbr-data con JWT obligatorio.
+ * - El servidor determina el proveedor según sbr_profiles.
+ * - Un usuario proveedor recibe únicamente su proveedor y su snapshot más reciente.
+ * - Gerencia conserva acceso al manifiesto y snapshots completos.
  */
 
 const SUPABASE_URL = "https://vagahrksyoniwutgqztl.supabase.co";
@@ -64,12 +71,21 @@ function mostrarLogin(mensaje = "") {
   });
 }
 
+async function sbrDataInvoke(action, providerId = null) {
+  const body = { action };
+  if (providerId) body.provider_id = providerId;
+  const { data, error } = await supabaseClient.functions.invoke("sbr-data", { body });
+  if (error) throw error;
+  return data;
+}
+
 function configurarRestriccionProveedor(perfil) {
   window.SBR_ALLOWED_PROVIDER = perfil.rol === "proveedor" ? perfil.proveedor : null;
   window.SBR_ALLOWED_PROVIDER_ID = null;
 
-  // Primera capa de autorización: el manifiesto que consume app.js se filtra
-  // según el perfil autenticado. Gerencia conserva acceso completo.
+  // Segunda capa de autorización: app.js continúa usando fetch(), pero las
+  // rutas data/*.json son atendidas exclusivamente por sbr-data. El navegador
+  // ya no obtiene directamente los JSON estáticos del repositorio.
   if (window.__sbrFetchOriginal) return;
   window.__sbrFetchOriginal = window.fetch.bind(window);
 
@@ -77,55 +93,40 @@ function configurarRestriccionProveedor(perfil) {
     const requestUrl = new URL(input instanceof Request ? input.url : input, window.location.href);
     const pathname = requestUrl.pathname;
 
-    if (pathname.endsWith("/data/proveedores.json") && window.SBR_ALLOWED_PROVIDER) {
-      const response = await window.__sbrFetchOriginal(input, init);
-      const manifest = await response.json();
-      const permitido = manifest.proveedores.find(p =>
-        String(p.nombre_display).trim().toUpperCase() === String(window.SBR_ALLOWED_PROVIDER).trim().toUpperCase()
-      );
-      const permitidos = permitido ? [permitido] : [];
-      window.SBR_ALLOWED_PROVIDER_ID = permitido?.id || null;
-
-      return new Response(JSON.stringify({ ...manifest, proveedores: permitidos }), {
-        status: response.status,
-        headers: { "Content-Type": "application/json" }
-      });
+    if (pathname.endsWith("/data/proveedores.json")) {
+      try {
+        const manifest = await sbrDataInvoke("manifest");
+        const permitido = manifest.proveedores?.[0];
+        window.SBR_ALLOWED_PROVIDER_ID = permitido?.id || null;
+        return new Response(JSON.stringify(manifest), {
+          status: 200,
+          headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
+        });
+      } catch (error) {
+        console.error("SBR manifest error", error);
+        return new Response(JSON.stringify({ error: "No fue posible cargar el manifiesto SBR" }), {
+          status: 502,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
 
-    // Para proveedores, el SBR solo expone la fotografía de la fecha operativa
-    // más reciente. Los snapshots históricos siguen existiendo para SUINSA,
-    // pero no llegan al navegador del usuario proveedor.
     const match = pathname.match(/\/data\/([^/]+)\.json$/);
-    if (match && window.SBR_ALLOWED_PROVIDER_ID) {
+    if (match) {
       const idSolicitado = match[1];
-      if (idSolicitado.toLowerCase() !== String(window.SBR_ALLOWED_PROVIDER_ID).toLowerCase()) {
-        return new Response(JSON.stringify({ error: "Proveedor no autorizado" }), {
+      try {
+        const payload = await sbrDataInvoke("provider", idSolicitado);
+        return new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
+        });
+      } catch (error) {
+        console.error("SBR provider data error", error);
+        return new Response(JSON.stringify({ error: "Proveedor no autorizado o datos no disponibles" }), {
           status: 403,
           headers: { "Content-Type": "application/json" }
         });
       }
-
-      const response = await window.__sbrFetchOriginal(input, init);
-      if (!response.ok) return response;
-
-      const payload = await response.json();
-      const fechas = Object.keys(payload.snapshots || {}).sort();
-      const ultimaFecha = fechas[fechas.length - 1];
-
-      if (!ultimaFecha) {
-        return new Response(JSON.stringify({ ...payload, snapshots: {} }), {
-          status: response.status,
-          headers: { "Content-Type": "application/json" }
-        });
-      }
-
-      return new Response(JSON.stringify({
-        ...payload,
-        snapshots: { [ultimaFecha]: payload.snapshots[ultimaFecha] }
-      }), {
-        status: response.status,
-        headers: { "Content-Type": "application/json" }
-      });
     }
 
     return window.__sbrFetchOriginal(input, init);
