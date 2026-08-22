@@ -3,7 +3,7 @@
  * Login con Supabase Auth + validación del perfil activo en public.sbr_profiles.
  *
  * Blindaje de datos:
- * - app.js ya no consume directamente data/*.json.
+ * - app.js no consume directamente data/*.json.
  * - Las lecturas pasan por la Edge Function sbr-data con JWT obligatorio.
  * - El servidor determina el proveedor según sbr_profiles.
  * - Un usuario proveedor recibe únicamente su proveedor y su snapshot más reciente.
@@ -52,7 +52,12 @@ function mostrarLogin(mensaje = "") {
     const password = document.getElementById("login-password").value;
 
     try {
-      const { data, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
+      // Evita que una incidencia de red deje el botón bloqueado indefinidamente.
+      const loginPromise = supabaseClient.auth.signInWithPassword({ email, password });
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("TIMEOUT_AUTH")), 15000)
+      );
+      const { data, error: authError } = await Promise.race([loginPromise, timeoutPromise]);
 
       if (authError || !data.user) {
         errorBox.textContent = authError?.message || "No fue posible iniciar sesión.";
@@ -63,7 +68,11 @@ function mostrarLogin(mensaje = "") {
 
       await validarPerfilYEntrar(data.user);
     } catch (err) {
-      errorBox.textContent = "Error de conexión con el servicio de autenticación. Intenta nuevamente.";
+      if (err?.message === "TIMEOUT_AUTH") {
+        errorBox.textContent = "El servicio de autenticación no respondió en 15 segundos. Revisa la conexión y vuelve a intentarlo.";
+      } else {
+        errorBox.textContent = "Error de conexión con el servicio de autenticación. Intenta nuevamente.";
+      }
       button.disabled = false;
       button.textContent = "Ingresar al SBR";
       console.error("SBR login error", err);
@@ -83,9 +92,6 @@ function configurarRestriccionProveedor(perfil) {
   window.SBR_ALLOWED_PROVIDER = perfil.rol === "proveedor" ? perfil.proveedor : null;
   window.SBR_ALLOWED_PROVIDER_ID = null;
 
-  // Segunda capa de autorización: app.js continúa usando fetch(), pero las
-  // rutas data/*.json son atendidas exclusivamente por sbr-data. El navegador
-  // ya no obtiene directamente los JSON estáticos del repositorio.
   if (window.__sbrFetchOriginal) return;
   window.__sbrFetchOriginal = window.fetch.bind(window);
 
