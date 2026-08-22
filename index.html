@@ -10,10 +10,29 @@
   :root{--bg:#FAFAF8;--ink:#14181D;--ink-muted:#6B7178;--ink-faint:#9BA0A6;--line:#E4E5E0;--line-strong:#C9CBC4;--primary:#1C3D5A;--positive:#3F6B52;--negative:#7A4038;--serif:'Newsreader',Georgia,serif;--sans:'Inter',-apple-system,sans-serif;}
   *{margin:0;padding:0;box-sizing:border-box;}body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}.page{max-width:1040px;margin:0 auto;padding:56px 48px 100px;}@media (max-width:760px){.page{padding:40px 20px 64px;}}
   .masthead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px;flex-wrap:wrap;gap:20px;border-bottom:1px solid var(--line-strong);padding-bottom:28px;}.brand{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink);font-weight:600;}.module{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;margin-left:12px}.controls{display:flex;gap:24px;flex-wrap:wrap}.control label{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px}.control select{font-family:var(--sans);font-size:13px;color:var(--ink);background:transparent;border:none;border-bottom:1px solid var(--line-strong);padding:4px 20px 6px 0;cursor:pointer;appearance:none;-webkit-appearance:none}.loading{font-family:var(--serif);font-style:italic;color:var(--ink-faint);padding:80px 0;text-align:center}.auth-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;background:var(--bg)}.auth-card{width:100%;max-width:430px;background:#fff;border:1px solid var(--line);padding:44px 42px;box-shadow:0 16px 50px rgba(20,24,29,.06)}.auth-brand{font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;margin-bottom:8px}.auth-kicker{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:28px}.auth-card h1{font-family:var(--serif);font-size:32px;font-weight:500;margin-bottom:12px}.auth-description{font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--ink-muted);margin-bottom:30px}.auth-form{display:flex;flex-direction:column;gap:9px}.auth-form label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin-top:6px}.auth-form input{font:inherit;font-size:14px;padding:12px 13px;border:1px solid var(--line-strong);background:#fff;outline:none}.auth-form button{margin-top:14px;border:0;background:var(--primary);color:#fff;font:600 13px var(--sans);padding:13px 16px;cursor:pointer}.auth-form button:disabled{opacity:.65;cursor:wait}.auth-error{min-height:20px;margin-top:8px;color:var(--negative);font-size:12px;line-height:1.5}@media (max-width:520px){.auth-card{padding:34px 26px}}
+.sbr-runtime-error{max-width:720px;margin:120px auto;padding:28px 32px;background:#fff;border:1px solid var(--line-strong);box-shadow:0 12px 40px rgba(20,24,29,.05)}.sbr-runtime-error h2{font-family:var(--serif);font-size:28px;font-weight:500;margin-bottom:10px}.sbr-runtime-error p{font-size:14px;line-height:1.6;color:var(--ink-muted)}.sbr-runtime-error code{display:block;margin-top:14px;padding:12px;background:#f5f5f2;white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--negative)}
 </style>
 </head>
 <body>
 <div class="page" id="app"><div class="loading">Verificando acceso al SBR…</div></div>
+<script>
+window.addEventListener('unhandledrejection', function(event){
+  const err = event.reason || {};
+  const message = err.message || String(err);
+  const app = document.getElementById('app');
+  if(app && !document.getElementById('login-form')) {
+    app.innerHTML = '<div class="sbr-runtime-error"><h2>No fue posible cargar el tablero</h2><p>La autenticación ya fue procesada, pero la aplicación encontró un error al cargar los datos.</p><code>'+String(message).replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))+'</code></div>';
+  }
+  console.error('SBR unhandled rejection', event.reason);
+});
+window.addEventListener('error', function(event){
+  if(!event.error) return;
+  const app = document.getElementById('app');
+  if(app && !document.getElementById('login-form')) {
+    app.innerHTML = '<div class="sbr-runtime-error"><h2>Error al cargar el SBR</h2><p>Se produjo un error inesperado al iniciar la aplicación.</p><code>'+String(event.error.message || event.message).replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))+'</code></div>';
+  }
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js?v=5"></script>
 </body>
