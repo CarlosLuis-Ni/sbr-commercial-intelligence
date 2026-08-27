@@ -32,6 +32,10 @@ let capituloActual = "dashboard";
 async function cargarManifiestoProveedores() {
   const res = await fetch(`data/proveedores.json?v=${Date.now()}`);
   const manifiesto = await res.json();
+  if (!res.ok || !manifiesto || !Array.isArray(manifiesto.proveedores)) {
+    const detalle = manifiesto?.error || `HTTP ${res.status}`;
+    throw new Error(`SBR_MANIFEST_LOAD_FAILED: ${detalle}`);
+  }
   return manifiesto.proveedores.map(p => ({ id: p.id, label: p.nombre_display }));
 }
 
@@ -500,11 +504,31 @@ function render() {
 }
 
 async function init() {
-  PROVEEDORES = await cargarManifiestoProveedores();
-  proveedorActual = PROVEEDORES[0].id;
-  const payload = await cargarProveedor(proveedorActual);
-  const fechas = Object.keys(payload.snapshots).sort();
-  fechaActual = fechas[fechas.length - 1];  // fecha operativa más reciente por defecto
-  render();
+  try {
+    PROVEEDORES = await cargarManifiestoProveedores();
+    if (!PROVEEDORES.length) throw new Error("SBR_MANIFEST_EMPTY");
+    proveedorActual = PROVEEDORES[0].id;
+    const payload = await cargarProveedor(proveedorActual);
+    if (!payload || !payload.snapshots || typeof payload.snapshots !== "object") {
+      throw new Error("SBR_PROVIDER_DATA_INVALID");
+    }
+    const fechas = Object.keys(payload.snapshots).sort();
+    if (!fechas.length) throw new Error("SBR_PROVIDER_NO_SNAPSHOTS");
+    fechaActual = fechas[fechas.length - 1];
+    render();
+  } catch (error) {
+    console.error("SBR application initialization error", error);
+    document.getElementById("app").innerHTML = `
+      <div class="auth-shell">
+        <div class="auth-card">
+          <div class="auth-brand">SUINSA Commercial Intelligence</div>
+          <div class="auth-kicker">Supplier Business Review</div>
+          <h1>No fue posible cargar el tablero</h1>
+          <p class="auth-description">La autenticación ya fue procesada, pero la aplicación no pudo cargar los datos SBR.</p>
+          <div class="auth-error" style="display:block;">${error?.message || "Error de carga de datos."}</div>
+          <button type="button" onclick="location.reload()">Reintentar</button>
+        </div>
+      </div>`;
+  }
 }
 init();
