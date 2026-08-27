@@ -93,8 +93,17 @@ function mostrarLogin(mensaje = "") {
 async function sbrDataInvoke(action, providerId = null) {
   const body = { action };
   if (providerId) body.provider_id = providerId;
-  const { data, error } = await supabaseClient.functions.invoke("sbr-data", { body });
+
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const accessToken = session?.access_token;
+  if (!accessToken) throw new Error("SBR_NO_ACCESS_TOKEN");
+
+  const { data, error } = await supabaseClient.functions.invoke("sbr-data", {
+    body,
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
   if (error) throw error;
+  if (!data || data.error) throw new Error(data?.error || "SBR_DATA_ERROR");
   return data;
 }
 
