@@ -2,7 +2,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const BUCKET = "SBR_DATA_PRIVATE";
-const ORIGIN = "https://commercial.suministrosinternacionales.com";
+const ORIGIN = "https://comercial.suministrosinternacionales.com";
 const cors = {"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Max-Age":"600","Vary":"Origin"};
 const json=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{...cors,"Content-Type":"application/json","Cache-Control":"no-store"}});
 async function getJson(url:string,headers:Record<string,string>){const r=await fetch(url,{headers});const raw=await r.text();let data:any=null;try{data=raw?JSON.parse(raw):null}catch{}return {r,data,raw};}
