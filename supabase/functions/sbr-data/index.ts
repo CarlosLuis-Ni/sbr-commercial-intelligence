@@ -17,7 +17,7 @@ Deno.serve(async(req)=>{
     if(!ur.r.ok||!ur.data?.id){console.error("SBR_AUTH_INVALID",ur.r.status,ur.raw);return json({error:"SBR_AUTH_INVALID"},401)}
     const uid=ur.data.id;
     const pu=new URL(`${SUPABASE_URL}/rest/v1/sbr_profiles`);pu.searchParams.set("select","id,nombre,rol,proveedor,activo");pu.searchParams.set("id",`eq.${uid}`);pu.searchParams.set("limit","1");
-    const pr=await getJson(pu.toString(),{apikey:SERVICE_KEY,Authorization:`Bearer ${SERVICE_KEY}`});
+    const pr=await getJson(pu.toString(),{apikey:ANON_KEY,Authorization:`Bearer ${token}`});
     if(!pr.r.ok){console.error("SBR_PROFILE_ERROR",pr.r.status,pr.raw);return json({error:"SBR_PROFILE_ERROR"},500)}
     const perfil=Array.isArray(pr.data)?pr.data[0]:null;if(!perfil)return json({error:"SBR_PROFILE_NOT_FOUND"},403);if(perfil.activo!==true)return json({error:"SBR_PROFILE_INACTIVE"},403);
     const esProveedor=String(perfil.rol||"").trim().toLowerCase()==="proveedor";if(esProveedor&&!perfil.proveedor)return json({error:"SBR_PROVIDER_NOT_ASSIGNED"},403);
