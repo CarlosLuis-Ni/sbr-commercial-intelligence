@@ -759,7 +759,7 @@ function renderPlan(payload, snap) {
       <thead><tr><th>Acción</th><th>Origen</th><th>Responsable</th><th>Plazo</th><th>Prioridad</th></tr></thead>
       <tbody>
         ${recos.map(r => `<tr>
-          <td><b>${r.titulo}</b><br><span style="color:var(--ink-muted);font-size:12px;">${r.detalle}</span></td>
+          <td><b>${r.titulo}</b><br><span style="color:var(--ink-muted);font-size:12px;">${normalizarTextoEjecutivo(r.detalle)}</span></td>
           <td style="color:var(--ink-faint);font-size:12px;">Cap. ${r.capitulo_origen} — ${CAP_NOMBRE[r.capitulo_origen]||""}</td>
           <td>${r.dueno}</td><td>${r.plazo}</td>
           <td class="priority-${r.prioridad==='Alta'?'high':'media'}">${r.prioridad}</td>
