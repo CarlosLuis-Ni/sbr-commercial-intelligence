@@ -423,6 +423,16 @@ function renderTendencias(payload, snap) {
 
   const n = Math.max(...anios.map(a => (multi[a] || []).length), 1);
 
+  // Cuando un proveedor inicia operaciones durante el año, la serie puede
+  // comenzar en un mes distinto de enero. INFARMA, por ejemplo, inició en abril.
+  // El eje X debe respetar ese mes de inicio para no presentar abril como enero.
+  const mesInicioSerie = (() => {
+    if (anios.length !== 1 || !Array.isArray(payload?.serie_mensual) || !payload.serie_mensual.length) return 1;
+    const primerMes = String(payload.serie_mensual[0]?.mes || "").split("-")[1];
+    const mes = Number(primerMes);
+    return Number.isFinite(mes) && mes >= 1 && mes <= 12 ? mes : 1;
+  })();
+
   const lines = anios.map(a => {
     const serie = multi[a] || [];
     if (!serie.length) return "";
@@ -578,7 +588,7 @@ function renderTendencias(payload, snap) {
   `).join("");
 })()}    ${Array.from({length:n}, (_,i) => {
           const x = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
-          const mes = i + 1;
+          const mes = mesInicioSerie + i;
           return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>`;
         }).join("")}
       </svg>
@@ -594,7 +604,9 @@ function renderTendencias(payload, snap) {
 
       <div class="panel-note">
         La comparación se realiza sobre meses equivalentes hasta la fecha
-        operativa disponible. Los valores al cierre de cada trayectoria se muestran en Córdobas (C$).
+        operativa disponible. Si el proveedor inició operaciones durante el año,
+        la trayectoria comienza en su primer mes con venta. Los valores al cierre
+        de cada trayectoria se muestran en Córdobas (C$).
       </div>
 
     </div>
