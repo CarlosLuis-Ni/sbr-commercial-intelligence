@@ -469,6 +469,8 @@ function renderTendencias(payload, snap) {
             <text x="4" y="${(yGrid+3).toFixed(1)}" class="wf-label">${fmtMonto(val)}</text>
           `;
         }).join("")}
+        <line x1="58" y1="190" x2="730" y2="190" stroke="#E4E5E0"/>
+        <text x="4" y="193" class="wf-label">C$0</text>
 
         ${lines}
 
