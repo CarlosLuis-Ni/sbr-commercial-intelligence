@@ -339,7 +339,7 @@ function renderTendencias(payload, snap) {
   ];
 
   const multi = snap.serie_multianual || {};
-  const anios = Object.keys(multi).sort((a,b) => Number(a) - Number(b));
+  const anios = Object.keys(multi).filter(a => Number(a) >= 2023).sort((a,b) => Number(a) - Number(b));
 
   const allVals = anios.flatMap(a => (multi[a] || []).filter(v => Number.isFinite(Number(v))));
   const min = 0;
@@ -481,19 +481,34 @@ function renderTendencias(payload, snap) {
 
         ${lines}
 
-        ${anios.map(a => {
-          const serie = multi[a] || [];
-          if (!serie.length) return "";
-          const i = serie.length - 1;
-          const valorFinal = Number(serie[i]);
-          if (!Number.isFinite(valorFinal) || valorFinal <= 0) return "";
-          const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
-          const py = 190 - ((valorFinal - min) / rango) * 155;
-          return `
-            <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.8" fill="${colors[a]}"/>
-            <text x="${Math.min(px + 9, 752).toFixed(1)}" y="${(py + 3).toFixed(1)}" class="wf-value" fill="${colors[a]}">${fmtMonto(valorFinal)}</text>
-          `;
-        }).join("")}    ${Array.from({length:n}, (_,i) => {
+        ${(() => {
+  const finales = anios.map(a => {
+    const serie = multi[a] || [];
+    if (!serie.length) return null;
+    const i = serie.length - 1;
+    const valorFinal = Number(serie[i]);
+    if (!Number.isFinite(valorFinal) || valorFinal <= 0) return null;
+    const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
+    const py = 190 - ((valorFinal - min) / rango) * 155;
+    return { a, valorFinal, px, py };
+  }).filter(Boolean);
+
+  // Evita que los valores finales queden superpuestos, especialmente cuando
+  // dos años terminan con ventas muy cercanas (p.ej. FARMAMEDICA).
+  const ordenadas = [...finales].sort((a,b) => a.py - b.py);
+  const minGap = 15;
+  let ultimoY = -Infinity;
+  ordenadas.forEach(item => {
+    item.labelY = Math.max(item.py + 3, ultimoY + minGap);
+    item.labelY = Math.min(item.labelY, 214);
+    ultimoY = item.labelY;
+  });
+
+  return finales.map(item => `
+    <circle cx="${item.px.toFixed(1)}" cy="${item.py.toFixed(1)}" r="2.8" fill="${colors[item.a]}"/>
+    <text x="${Math.min(item.px + 9, 752).toFixed(1)}" y="${item.labelY.toFixed(1)}" class="wf-value" fill="${colors[item.a]}">${fmtMonto(item.valorFinal)}</text>
+  `).join("");
+})()}    ${Array.from({length:n}, (_,i) => {
           const x = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
           const mes = i + 1;
           return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>`;
@@ -573,7 +588,7 @@ function renderDrillDownClientesPerdidos(detalle) {
   if (!detalle || detalle.length === 0) return "";
   return `
     <details style="margin-top:20px;">
-      <summary class="client-drill-summary">Ver clientes (${detalle.length})</summary>
+      <summary class="client-drill-summary" style="list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;"><span style="font-size:12px;">▶</span><span>Ver clientes (${detalle.length})</span></summary>
       <div style="margin-top:16px;max-height:420px;overflow-y:auto;border:1px solid var(--line);">
         <table class="exec-table" style="margin-top:0;">
           <thead><tr><th>Cliente</th><th>Venta período anterior</th><th>Impacto perdido</th><th>Segmento</th><th>Prioridad</th></tr></thead>
