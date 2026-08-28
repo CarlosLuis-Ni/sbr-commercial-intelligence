@@ -175,64 +175,119 @@ function renderContribList(rows) {
 }
 
 function renderMatrix(matriz) {
-  // Todos los productos se conservan como puntos (con tooltip nativo al
-  // pasar el mouse). Las etiquetas de texto en el gráfico se reservan solo
-  // para los productos estratégicamente relevantes (mayor participación,
-  // o los extremos de crecimiento), para que la zona con muchos productos
-  // chicos no quede ilegible por superposición de texto.
+  // Todos los productos siguen siendo puntos con tooltip completo.
+  // Las etiquetas visibles se reservan a los productos más relevantes para
+  // mantener una lectura ejecutiva limpia, evitando superposiciones.
   const conCrecimiento = matriz.filter(m => m.yoy_pct !== null);
-  const yoys = conCrecimiento.map(m => m.yoy_pct);
+  if (!conCrecimiento.length) {
+    return `<div class="panel-note">No hay datos suficientes para construir la matriz Revenue vs. Growth.</div>`;
+  }
+
+  const yoys = conCrecimiento.map(m => Number(m.yoy_pct));
   const minY = Math.min(...yoys, -10), maxY = Math.max(...yoys, 10);
-  const maxPct = Math.max(...matriz.map(m => m.pct_participacion));
-  const x = v => 40 + ((v - minY) / (maxY - minY)) * 640;
+  const maxPct = Math.max(...conCrecimiento.map(m => Number(m.pct_participacion)), 1);
+  const x = v => 40 + ((v - minY) / Math.max(maxY - minY, 1)) * 640;
   const y = v => 340 - (v / maxPct) * 300;
   const zeroX = x(0);
 
-  // Productos relevantes a etiquetar: top 5 por participación + los
-  // extremos de crecimiento (mayor y menor YoY), sin duplicar.
-  const porParticipacion = [...conCrecimiento].sort((a,b) => b.pct_participacion - a.pct_participacion);
-  const relevantesSet = new Set(porParticipacion.slice(0, 5).map(m => m.marca));
-  const mayorCrecimiento = conCrecimiento.reduce((best, m) => m.yoy_pct > best.yoy_pct ? m : best, conCrecimiento[0]);
-  const menorCrecimiento = conCrecimiento.reduce((worst, m) => m.yoy_pct < worst.yoy_pct ? m : worst, conCrecimiento[0]);
-  if (mayorCrecimiento) relevantesSet.add(mayorCrecimiento.marca);
-  if (menorCrecimiento) relevantesSet.add(menorCrecimiento.marca);
+  // Etiquetamos solo los 3 productos de mayor participación y los extremos
+  // de crecimiento. El resto conserva tooltip al pasar el cursor.
+  const porParticipacion = [...conCrecimiento]
+    .sort((a,b) => Number(b.pct_participacion) - Number(a.pct_participacion));
+  const relevantes = [];
+  const addRelevant = m => {
+    if (m && !relevantes.some(r => r.marca === m.marca)) relevantes.push(m);
+  };
+  porParticipacion.slice(0, 3).forEach(addRelevant);
+  addRelevant(conCrecimiento.reduce((best, m) => Number(m.yoy_pct) > Number(best.yoy_pct) ? m : best, conCrecimiento[0]));
+  addRelevant(conCrecimiento.reduce((worst, m) => Number(m.yoy_pct) < Number(worst.yoy_pct) ? m : worst, conCrecimiento[0]));
 
-  // Posicionamiento de etiquetas: se ordenan por X y se escalona la altura
-  // cuando dos quedarían demasiado cerca, para reducir superposición.
-  const relevantes = conCrecimiento
-    .filter(m => relevantesSet.has(m.marca))
-    .sort((a, b) => x(a.yoy_pct) - x(b.yoy_pct));
-  let ultimoX = -Infinity, nivel = 0;
+  // Colocación de etiquetas con posiciones candidatas y detección de
+  // colisiones. Así evitamos que nombres cercanos se impriman uno sobre otro.
+  const ocupadas = [];
+  const labelWidth = texto => Math.min(175, Math.max(58, texto.length * 5.8));
+  const solapa = (a,b) => !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+
   const etiquetas = relevantes.map(m => {
-    const px = x(m.yoy_pct), py = y(m.pct_participacion);
-    const r = Math.max(8, Math.sqrt(m.pct_participacion) * 6);
-    if (px - ultimoX < 140) { nivel = (nivel + 1) % 4; } else { nivel = 0; }
-    ultimoX = px;
-    const offset = r + 14 + nivel * 18;
-    const nombreCorto = m.marca.split(" (")[0].slice(0, 22);
-    return `<line x1="${px}" y1="${py - r - 2}" x2="${px}" y2="${py - offset + 3}" stroke="#C9CBC4" stroke-width="1"/>
-      <text x="${px}" y="${py - offset}" class="matrix-point" text-anchor="middle">${nombreCorto}</text>`;
+    const px = x(Number(m.yoy_pct));
+    const py = y(Number(m.pct_participacion));
+    const r = Math.max(8, Math.sqrt(Number(m.pct_participacion)) * 6);
+    const nombreCorto = String(m.marca).split(" (")[0].trim().slice(0, 24);
+    const w = labelWidth(nombreCorto);
+    const h = 12;
+
+    const candidatos = [
+      {dx:0, dy:-(r+18), anchor:"middle"},
+      {dx:r+10, dy:-(r+8), anchor:"start"},
+      {dx:-(r+10), dy:-(r+8), anchor:"end"},
+      {dx:r+12, dy:5, anchor:"start"},
+      {dx:-(r+12), dy:5, anchor:"end"},
+      {dx:0, dy:r+20, anchor:"middle"},
+      {dx:r+10, dy:r+18, anchor:"start"},
+      {dx:-(r+10), dy:r+18, anchor:"end"}
+    ];
+
+    let elegido = null;
+    for (const c of candidatos) {
+      const tx = px + c.dx;
+      const ty = py + c.dy;
+      const left = c.anchor === "start" ? tx : c.anchor === "end" ? tx - w : tx - w/2;
+      const right = left + w;
+      const top = ty - h;
+      const bottom = ty + 2;
+
+      // Mantener las etiquetas dentro del área útil del SVG.
+      if (left < 22 || right > 698 || top < 22 || bottom > 342) continue;
+
+      const box = {left, right, top, bottom};
+      if (!ocupadas.some(o => solapa(box, o))) {
+        elegido = {tx, ty, anchor:c.anchor, box};
+        break;
+      }
+    }
+
+    // Si todas las posiciones candidatas chocan, conserva una separación
+    // vertical mínima en una posición superior, priorizando legibilidad.
+    if (!elegido) {
+      let ty = Math.max(24, py - r - 18);
+      while (ocupadas.some(o => solapa(
+        {left:px-w/2,right:px+w/2,top:ty-h,bottom:ty+2}, o
+      )) && ty < 335) ty += 15;
+      elegido = {
+        tx:Math.min(698-w/2, Math.max(22+w/2, px)),
+        ty:Math.min(335, ty),
+        anchor:"middle",
+        box:{left:Math.max(22,px-w/2),right:Math.min(698,px+w/2),top:ty-h,bottom:ty+2}
+      };
+    }
+
+    ocupadas.push(elegido.box);
+    const lineX2 = elegido.anchor === "start" ? elegido.tx - 4 :
+                    elegido.anchor === "end" ? elegido.tx + 4 : elegido.tx;
+    const lineY2 = elegido.ty - 3;
+
+    return `<line x1="${px.toFixed(1)}" y1="${(py-r-2).toFixed(1)}" x2="${lineX2.toFixed(1)}" y2="${lineY2.toFixed(1)}" stroke="#C9CBC4" stroke-width="1"/>
+      <text x="${elegido.tx.toFixed(1)}" y="${elegido.ty.toFixed(1)}" class="matrix-point" text-anchor="${elegido.anchor}">${nombreCorto}</text>`;
   }).join("");
 
   const puntos = conCrecimiento.map(m => {
-    const r = Math.max(8, Math.sqrt(m.pct_participacion) * 6);
-    const color = m.yoy_pct >= 0 ? "#3F6B52" : "#7A4038";
-    return `<circle cx="${x(m.yoy_pct)}" cy="${y(m.pct_participacion)}" r="${r}" fill="${color}" opacity="0.75">
-      <title>${m.marca} — Participación ${m.pct_participacion.toFixed(1)}% · Crecimiento ${fmtPct(m.yoy_pct)}</title>
+    const r = Math.max(8, Math.sqrt(Number(m.pct_participacion)) * 6);
+    const color = Number(m.yoy_pct) >= 0 ? "#3F6B52" : "#7A4038";
+    return `<circle cx="${x(Number(m.yoy_pct)).toFixed(1)}" cy="${y(Number(m.pct_participacion)).toFixed(1)}" r="${r.toFixed(1)}" fill="${color}" opacity="0.75">
+      <title>${m.marca} — Participación ${Number(m.pct_participacion).toFixed(1)}% · Crecimiento ${fmtPct(Number(m.yoy_pct))}</title>
     </circle>`;
   }).join("");
 
   return `<svg viewBox="0 0 720 380" width="100%" height="380">
-    <line x1="${zeroX}" y1="10" x2="${zeroX}" y2="345" stroke="#E4E5E0"/>
+    <line x1="${zeroX.toFixed(1)}" y1="10" x2="${zeroX.toFixed(1)}" y2="345" stroke="#E4E5E0"/>
     <line x1="20" y1="345" x2="700" y2="345" stroke="#E4E5E0"/>
     <text x="700" y="362" class="matrix-label" text-anchor="end">Crecimiento YoY →</text>
     <text x="24" y="20" class="matrix-label">↑ Participación</text>
     ${puntos}
     ${etiquetas}
   </svg>
-  <div class="panel-note">Pase el cursor sobre cualquier punto para ver el detalle completo · etiquetas visibles: mayor participación y extremos de crecimiento</div>`;
+  <div class="panel-note">Pase el cursor sobre cualquier punto para ver el detalle completo · etiquetas visibles: top 3 por participación y extremos de crecimiento</div>`;
 }
-
 function renderExecSummary(hallazgos) {
   if (!hallazgos || hallazgos.length === 0) return "";
   return `
@@ -588,7 +643,7 @@ function renderDrillDownClientesPerdidos(detalle) {
   if (!detalle || detalle.length === 0) return "";
   return `
     <details style="margin-top:20px;">
-      <summary class="client-drill-summary" style="list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;"><span style="font-size:12px;">▶</span><span>Ver clientes (${detalle.length})</span></summary>
+      <summary class="client-drill-summary">Ver clientes (${detalle.length})</summary>
       <div style="margin-top:16px;max-height:420px;overflow-y:auto;border:1px solid var(--line);">
         <table class="exec-table" style="margin-top:0;">
           <thead><tr><th>Cliente</th><th>Venta período anterior</th><th>Impacto perdido</th><th>Segmento</th><th>Prioridad</th></tr></thead>
