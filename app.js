@@ -47,7 +47,20 @@ async function cargarProveedor(id) {
 
 const fmtMonto = v => `C$${(v/1_000_000).toFixed(2)}M`;
 const fmtMontoK = v => Math.abs(v) >= 1_000_000 ? fmtMonto(v) : `C$${(v/1000).toFixed(0)}K`;
-const fmtPct = v => (v === null || v === undefined) ? "—" : `${v>0?"+":""}${v.toFixed(1)}%`;
+const fmtPct = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? "—" : `${Number(v)>0?"+" :""}${Number(v).toFixed(1)}%`;
+const fmtPctPlain = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? "—" : `${Number(v).toFixed(1)}%`;
+const tieneHistoriaR12 = payload => Array.isArray(payload?.serie_mensual) && payload.serie_mensual.length >= 12;
+const fmtR12Value = (payload, snap) => tieneHistoriaR12(payload) ? fmtMonto(snap.kpis.mat_r12) : "—";
+const fmtR12Delta = (payload, snap) => tieneHistoriaR12(payload)
+  ? `${fmtPct(snap.kpis.yoy_mat_pct)} vs. periodo anterior`
+  : "Sin 12 meses de historia";
+const fmtChurnValue = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? "—" : `${Number(v).toFixed(1)}%`;
+const fmtBaseClientes = snap => (snap.kpis.clientes_activos_anterior === 0 && snap.kpis.yoy_ytd_pct === null)
+  ? "Base inicial"
+  : `${snap.kpis.clientes_activos_anterior} en periodo anterior`;
+const fmtChurnDelta = snap => (snap.kpis.churn_pct === null || snap.kpis.churn_pct === undefined)
+  ? "Sin base comparable"
+  : `${snap.waterfall.n_perdidos} clientes perdidos`;
 const deltaClass = v => (v===null||v===undefined) ? "" : v>0 ? "up" : v<0 ? "down" : "";
 const MESES_LARGO = ["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const fmtFechaLarga = fechaISO => {
@@ -346,9 +359,9 @@ function renderDashboard(payload, snap) {
     <p class="dek">Fecha Operativa: ${snap.fecha_operativa}</p>
     ${kpiStrip([
       {label:"Venta YTD", value:fmtMonto(k.venta_ytd), delta:`${fmtPct(k.yoy_ytd_pct)} YoY`, deltaClass:deltaClass(k.yoy_ytd_pct)},
-      {label:"MAT / R12", value:fmtMonto(k.mat_r12), delta:`${fmtPct(k.yoy_mat_pct)} vs. periodo anterior`, deltaClass:deltaClass(k.yoy_mat_pct)},
-      {label:"Clientes activos", value:k.clientes_activos, delta:`${k.clientes_activos_anterior} en periodo anterior`},
-      {label:"Churn de cartera", value:`${k.churn_pct}%`, delta:`${wf.n_perdidos} clientes perdidos`, deltaClass:"down"},
+      {label:"MAT / R12", value:fmtR12Value(payload, snap), delta:fmtR12Delta(payload, snap), deltaClass:deltaClass(k.yoy_mat_pct)},
+      {label:"Clientes activos", value:k.clientes_activos, delta:fmtBaseClientes(snap)},
+      {label:"Churn de cartera", value:fmtChurnValue(k.churn_pct), delta:fmtChurnDelta(snap), deltaClass:k.churn_pct === null ? "" : "down"},
     ])}
     <div class="panel-grid">
       <div><div class="panel-title">Variación interanual (waterfall)</div>${renderWaterfall(wf)}</div>
@@ -372,8 +385,8 @@ function renderDiagnostico(payload, snap) {
     <p class="dek">Descomposición de la variación interanual del periodo.</p>
     ${kpiStrip([
       {label:"Venta YTD", value:fmtMonto(snap.kpis.venta_ytd), delta:`${fmtPct(snap.kpis.yoy_ytd_pct)} interanual`, deltaClass:deltaClass(snap.kpis.yoy_ytd_pct)},
-      {label:"MAT / R12", value:fmtMonto(snap.kpis.mat_r12), delta:`${fmtPct(snap.kpis.yoy_mat_pct)}`, deltaClass:deltaClass(snap.kpis.yoy_mat_pct)},
-      {label:"Churn de cartera", value:`${snap.kpis.churn_pct}%`, delta:`${wf.n_perdidos} de ${wf.n_perdidos+wf.n_retenidos} clientes 2025`},
+      {label:"MAT / R12", value:fmtR12Value(payload, snap), delta:tieneHistoriaR12(payload) ? fmtPct(snap.kpis.yoy_mat_pct) : "Sin 12 meses de historia", deltaClass:deltaClass(snap.kpis.yoy_mat_pct)},
+      {label:"Churn de cartera", value:fmtChurnValue(snap.kpis.churn_pct), delta:snap.kpis.churn_pct === null ? "Sin base comparable" : `${wf.n_perdidos} de ${wf.n_perdidos+wf.n_retenidos} clientes 2025`},
     ])}
     ${renderExecSummary(snap.hallazgos["02"])}
     <div class="section">
@@ -444,9 +457,9 @@ function renderTendencias(payload, snap) {
   const momMax = Math.max(...momVals.map(v => Math.abs(v)), 1);
 
   const momentumRows = mom.map((m, idx) => {
-    const pct = Number(m.mom_pct) || 0;
+    const pct = Number(m.mom_pct);
     const valor = Number(m.valor) || 0;
-    const comparable = idx > 0;
+    const comparable = idx > 0 && Number.isFinite(pct);
     const width = comparable ? Math.min(Math.abs(pct) / momMax * 100, 100) : 0;
     const pctTexto = comparable ? fmtPct(pct) : "—";
     const color = comparable ? (pct >= 0 ? "var(--positive)" : "var(--negative)") : "var(--ink-faint)";
@@ -468,7 +481,7 @@ function renderTendencias(payload, snap) {
   const kpis = [
     {
       label:"MAT / R12",
-      value:fmtMonto(snap.kpis.mat_r12),
+      value:fmtR12Value(payload, snap),
       delta:fmtPct(snap.kpis.yoy_mat_pct),
       deltaClass:deltaClass(snap.kpis.yoy_mat_pct)
     },
@@ -681,8 +694,8 @@ function renderClientes(payload, snap) {
     <h1 class="thesis">Segmentación ABC 70/20/10 y dinámica real de cartera</h1>
     <p class="dek">Clasificación de clientes según metodología ABC 70/20/10 de SUINSA.</p>
     ${kpiStrip([
-      {label:"Clientes activos", value:snap.kpis.clientes_activos, delta:`${snap.kpis.clientes_activos_anterior} en periodo anterior`},
-      {label:"Churn", value:`${snap.kpis.churn_pct}%`, delta:`${snap.waterfall.n_perdidos} perdidos`, deltaClass:"down"},
+      {label:"Clientes activos", value:snap.kpis.clientes_activos, delta:fmtBaseClientes(snap)},
+      {label:"Churn", value:fmtChurnValue(snap.kpis.churn_pct), delta:snap.kpis.churn_pct === null ? "Sin base comparable" : `${snap.waterfall.n_perdidos} perdidos`, deltaClass:snap.kpis.churn_pct === null ? "" : "down"},
     ])}
     ${renderExecSummary(snap.hallazgos["05"])}
     <div class="section">
