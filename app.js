@@ -303,19 +303,36 @@ function renderMatrix(matriz) {
 }
 function normalizarTextoEjecutivo(texto) {
   if (texto === null || texto === undefined) return "";
-  const textoStr = String(texto);
+  let textoStr = String(texto);
 
   // Hace más explícita la lógica de priorización económica en el SBR,
   // sin modificar los datos ni la lógica de cálculo del motor.
-  return textoStr
+  textoStr = textoStr
     .replace(
-      /^Representan (C\$[\d,.]+) — prioridad por impacto en C\$, no por volumen de clientes\.$/,
+      /^Representan (C\\$[\\d,.]+) — prioridad por impacto en C\\$, no por volumen de clientes\\.$/,
       "Representan $1 en venta potencial a recuperar; por ello, la prioridad se define por impacto económico y no por cantidad de clientes."
     )
     .replace(
       "La prioridad de contacto debe ser por impacto en C$, no por cantidad de clientes.",
       "La recuperación debe priorizarse por valor económico potencial, no por cantidad de clientes."
     );
+
+  // En textos ejecutivos, los importes negativos menores de C$1M se muestran
+  // en miles para facilitar la lectura (p.ej. -0.94M → −C$940K).
+  // Los importes de C$1M o más conservan la notación en millones.
+  textoStr = textoStr.replace(/([−-]?)C?\\$?([0-9]+(?:\\.[0-9]+)?)M\\b/g, (match, signo, numero) => {
+    const valor = Number(numero);
+    if (!Number.isFinite(valor)) return match;
+    const negativo = signo === "-" || signo === "−";
+    const abs = Math.abs(valor);
+    if (abs < 1) {
+      const miles = Math.round(abs * 1000);
+      return (negativo ? "−" : "") + "C$" + miles + "K";
+    }
+    return (negativo ? "−" : "") + "C$" + abs.toFixed(2) + "M";
+  });
+
+  return textoStr;
 }
 
 function renderExecSummary(hallazgos) {
@@ -325,7 +342,7 @@ function renderExecSummary(hallazgos) {
     <div>
       ${hallazgos.map(h => `
         <div class="entry">
-          <div class="entry-title">${h.texto}</div>
+          <div class="entry-title">${normalizarTextoEjecutivo(h.texto)}</div>
           <div class="entry-body">${normalizarTextoEjecutivo(h.implicacion)}</div>
         </div>`).join("")}
     </div>`;
@@ -336,7 +353,7 @@ function renderOportunidadesRiesgos(hallazgos) {
   const riesgos = (hallazgos || []).filter(h => h.tipo === "riesgo");
   if (oportunidades.length === 0 && riesgos.length === 0) return "";
   const col = (items, vacio) => items.length
-    ? items.map(h => `<div class="entry"><div class="entry-title">${h.texto}</div><div class="entry-body">${h.implicacion}</div></div>`).join("")
+    ? items.map(h => `<div class="entry"><div class="entry-title">${normalizarTextoEjecutivo(h.texto)}</div><div class="entry-body">${normalizarTextoEjecutivo(h.implicacion)}</div></div>`).join("")
     : `<div class="entry"><div class="entry-body" style="font-style:italic;">${vacio}</div></div>`;
   return `
     <div class="two-col" style="margin-top:32px;">
