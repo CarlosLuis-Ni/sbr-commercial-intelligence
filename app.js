@@ -309,7 +309,7 @@ function normalizarTextoEjecutivo(texto) {
   // sin modificar los datos ni la lógica de cálculo del motor.
   return textoStr
     .replace(
-      /^Representan (C\\$[\\d,.]+) — prioridad por impacto en C\\$, no por volumen de clientes\\.$/,
+      /^Representan (C\$[\d,.]+) — prioridad por impacto en C\$, no por volumen de clientes\.$/,
       "Representan $1 en venta potencial a recuperar; por ello, la prioridad se define por impacto económico y no por cantidad de clientes."
     )
     .replace(
