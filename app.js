@@ -309,7 +309,7 @@ function normalizarTextoEjecutivo(texto) {
   // sin modificar los datos ni la lógica de cálculo del motor.
   textoStr = textoStr
     .replace(
-      /^Representan (C\$[\\d,.]+) — prioridad por impacto en C\$, no por volumen de clientes\\.$/,
+      /^Representan (C\$[\d,.]+) — prioridad por impacto en C\$, no por volumen de clientes\.$/,
       "Representan $1 en venta potencial a recuperar; por ello, la prioridad se define por impacto económico y no por cantidad de clientes."
     )
     .replace(
@@ -320,7 +320,7 @@ function normalizarTextoEjecutivo(texto) {
   // En textos ejecutivos, los importes negativos menores de C$1M se muestran
   // en miles para facilitar la lectura (p.ej. -0.94M → −C$940K).
   // Los importes de C$1M o más conservan la notación en millones.
-  textoStr = textoStr.replace(/([−-]?)C?\$?([0-9]+(?:\\.[0-9]+)?)M\\b/g, (match, signo, numero) => {
+  textoStr = textoStr.replace(/([−-]?)C?\$?([0-9]+(?:\.[0-9]+)?)M\b/g, (match, signo, numero) => {
     const valor = Number(numero);
     if (!Number.isFinite(valor)) return match;
     const negativo = signo === "-" || signo === "−";
