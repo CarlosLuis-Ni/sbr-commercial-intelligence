@@ -564,7 +564,7 @@ function renderDrillDownClientesPerdidos(detalle) {
   if (!detalle || detalle.length === 0) return "";
   return `
     <details open style="margin-top:20px;">
-      <summary style="cursor:pointer;font-size:12.5px;color:var(--primary);font-weight:600;">Ver clientes (${detalle.length})</summary>
+      <summary class="client-drill-summary">Ver clientes (${detalle.length})</summary>
       <div style="margin-top:16px;max-height:420px;overflow-y:auto;border:1px solid var(--line);">
         <table class="exec-table" style="margin-top:0;">
           <thead><tr><th>Cliente</th><th>Venta período anterior</th><th>Impacto perdido</th><th>Segmento</th><th>Prioridad</th></tr></thead>
