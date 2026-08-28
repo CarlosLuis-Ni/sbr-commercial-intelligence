@@ -461,41 +461,41 @@ function renderTendencias(payload, snap) {
         height="240"
         aria-label="Evolución acumulada de ventas por año"
       >
-        \${[0.25,0.5,0.75,1].map((ratio) => {
+        ${[0.25,0.5,0.75,1].map((ratio) => {
           const yGrid = 190 - (ratio * 155);
           const val = max * ratio;
           return \`
-            <line x1="58" y1="\${yGrid.toFixed(1)}" x2="730" y2="\${yGrid.toFixed(1)}" stroke="#E4E5E0" stroke-dasharray="3 5"/>
-            <text x="4" y="\${(yGrid+3).toFixed(1)}" class="wf-label">\${fmtMonto(val)}</text>
+            <line x1="58" y1="${yGrid.toFixed(1)}" x2="730" y2="${yGrid.toFixed(1)}" stroke="#E4E5E0" stroke-dasharray="3 5"/>
+            <text x="4" y="${(yGrid+3).toFixed(1)}" class="wf-label">${fmtMonto(val)}</text>
           \`;
         }).join("")}
 
-        \${lines}
+        ${lines}
 
-        \${anios.map(a => {
+        ${anios.map(a => {
           const serie = multi[a] || [];
           if (!serie.length) return "";
           const i = serie.length - 1;
           const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
           const py = 190 - ((serie[i] - min) / rango) * 155;
           return \`
-            <circle cx="\${px.toFixed(1)}" cy="\${py.toFixed(1)}" r="2.8" fill="\${colors[a]}"/>
-            <text x="\${Math.min(px + 9, 752).toFixed(1)}" y="\${(py + 3).toFixed(1)}" class="wf-value" fill="\${colors[a]}">\${fmtMonto(serie[i])}</text>
+            <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.8" fill="${colors[a]}"/>
+            <text x="${Math.min(px + 9, 752).toFixed(1)}" y="${(py + 3).toFixed(1)}" class="wf-value" fill="${colors[a]}">${fmtMonto(serie[i])}</text>
           \`;
         }).join("")}
 
-        \${Array.from({length:n}, (_,i) => {
+        ${Array.from({length:n}, (_,i) => {
           const x = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
           const mes = i + 1;
-          return \`<text x="\${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">\${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>\`;
+          return \`<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>\`;
         }).join("")}
       </svg>
 
       <div style="display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-muted);margin-top:4px;">
-        \${anios.map(a => \`
+        ${anios.map(a => \`
           <span>
-            <span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:\${colors[a]};vertical-align:middle;"></span>
-            \${a}
+            <span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:${colors[a]};vertical-align:middle;"></span>
+            ${a}
           </span>
         \`).join("")}
       </div>
