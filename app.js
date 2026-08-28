@@ -341,8 +341,8 @@ function renderTendencias(payload, snap) {
   const multi = snap.serie_multianual || {};
   const anios = Object.keys(multi).sort((a,b) => Number(a) - Number(b));
 
-  const allVals = anios.flatMap(a => multi[a] || []);
-  const min = allVals.length ? Math.min(...allVals) : 0;
+  const allVals = anios.flatMap(a => (multi[a] || []).filter(v => Number.isFinite(Number(v))));
+  const min = 0;
   const max = allVals.length ? Math.max(...allVals) : 1;
   const rango = Math.max(max - min, 1);
 
@@ -359,7 +359,14 @@ function renderTendencias(payload, snap) {
     const serie = multi[a] || [];
     if (!serie.length) return "";
 
-    const pts = serie.map((v,i) => {
+    // Los ceros iniciales de años históricos representan ausencia de dato,
+    // no ventas reales. Se omiten para evitar una trayectoria engañosa.
+    const primerDato = serie.findIndex(v => Number(v) > 0);
+    const inicio = primerDato >= 0 ? primerDato : 0;
+    const puntosValidos = serie.map((v,i) => ({v:Number(v),i})).filter(p => p.i >= inicio && Number.isFinite(p.v) && p.v > 0);
+    if (puntosValidos.length < 2) return "";
+
+    const pts = puntosValidos.map(({v,i}) => {
       const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
       const py = 190 - ((v - min) / rango) * 155;
       return `${px.toFixed(1)},${py.toFixed(1)}`;
@@ -478,15 +485,15 @@ function renderTendencias(payload, snap) {
           const serie = multi[a] || [];
           if (!serie.length) return "";
           const i = serie.length - 1;
+          const valorFinal = Number(serie[i]);
+          if (!Number.isFinite(valorFinal) || valorFinal <= 0) return "";
           const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
-          const py = 190 - ((serie[i] - min) / rango) * 155;
+          const py = 190 - ((valorFinal - min) / rango) * 155;
           return `
             <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.8" fill="${colors[a]}"/>
-            <text x="${Math.min(px + 9, 752).toFixed(1)}" y="${(py + 3).toFixed(1)}" class="wf-value" fill="${colors[a]}">${fmtMonto(serie[i])}</text>
+            <text x="${Math.min(px + 9, 752).toFixed(1)}" y="${(py + 3).toFixed(1)}" class="wf-value" fill="${colors[a]}">${fmtMonto(valorFinal)}</text>
           `;
-        }).join("")}
-
-        ${Array.from({length:n}, (_,i) => {
+        }).join("")}    ${Array.from({length:n}, (_,i) => {
           const x = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
           const mes = i + 1;
           return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>`;
