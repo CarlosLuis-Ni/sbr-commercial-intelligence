@@ -456,48 +456,53 @@ function renderTendencias(payload, snap) {
       </h2>
 
       <svg
-        viewBox="0 0 760 220"
+        viewBox="0 0 790 240"
         width="100%"
-        height="220"
+        height="240"
         aria-label="Evolución acumulada de ventas por año"
       >
-        <line
-          x1="30"
-          y1="190"
-          x2="730"
-          y2="190"
-          stroke="#E4E5E0"
-        />
+        \${[0.25,0.5,0.75,1].map((ratio) => {
+          const yGrid = 190 - (ratio * 155);
+          const val = max * ratio;
+          return \`
+            <line x1="58" y1="\${yGrid.toFixed(1)}" x2="730" y2="\${yGrid.toFixed(1)}" stroke="#E4E5E0" stroke-dasharray="3 5"/>
+            <text x="4" y="\${(yGrid+3).toFixed(1)}" class="wf-label">\${fmtMonto(val)}</text>
+          \`;
+        }).join("")}
 
-        <line
-          x1="30"
-          y1="112"
-          x2="730"
-          y2="112"
-          stroke="#E4E5E0"
-          stroke-dasharray="3 5"
-        />
+        \${lines}
 
-        ${lines}
-        ${Array.from({length:n}, (_,i) => {
+        \${anios.map(a => {
+          const serie = multi[a] || [];
+          if (!serie.length) return "";
+          const i = serie.length - 1;
+          const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
+          const py = 190 - ((serie[i] - min) / rango) * 155;
+          return \`
+            <circle cx="\${px.toFixed(1)}" cy="\${py.toFixed(1)}" r="2.8" fill="\${colors[a]}"/>
+            <text x="\${Math.min(px + 9, 752).toFixed(1)}" y="\${(py + 3).toFixed(1)}" class="wf-value" fill="\${colors[a]}">\${fmtMonto(serie[i])}</text>
+          \`;
+        }).join("")}
+
+        \${Array.from({length:n}, (_,i) => {
           const x = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
           const mes = i + 1;
-          return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>`;
+          return \`<text x="\${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">\${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>\`;
         }).join("")}
       </svg>
 
       <div style="display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-muted);margin-top:4px;">
-        ${anios.map(a => `
+        \${anios.map(a => \`
           <span>
-            <span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:${colors[a]};vertical-align:middle;"></span>
-            ${a}
+            <span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:\${colors[a]};vertical-align:middle;"></span>
+            \${a}
           </span>
-        `).join("")}
+        \`).join("")}
       </div>
 
       <div class="panel-note">
         La comparación se realiza sobre meses equivalentes hasta la fecha
-        operativa disponible.
+        operativa disponible. Los valores al cierre de cada trayectoria se muestran en Córdobas (C$).
       </div>
 
     </div>
@@ -512,7 +517,7 @@ function renderTendencias(payload, snap) {
         Momentum mensual
       </h2>
 
-      <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;padding:0 0 9px;border-bottom:1px solid var(--line-strong);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;">
+      <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;width:100%;max-width:760px;padding:0 0 9px;border-bottom:1px solid var(--line-strong);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;">
         <span>Mes</span>
         <span>Variación MoM</span>
         <span style="text-align:right;">%</span>
@@ -558,7 +563,7 @@ function renderPortafolio(payload, snap) {
 function renderDrillDownClientesPerdidos(detalle) {
   if (!detalle || detalle.length === 0) return "";
   return `
-    <details style="margin-top:20px;">
+    <details open style="margin-top:20px;">
       <summary style="cursor:pointer;font-size:12.5px;color:var(--primary);font-weight:600;">Ver clientes (${detalle.length})</summary>
       <div style="margin-top:16px;max-height:420px;overflow-y:auto;border:1px solid var(--line);">
         <table class="exec-table" style="margin-top:0;">
