@@ -32,10 +32,6 @@ let capituloActual = "dashboard";
 async function cargarManifiestoProveedores() {
   const res = await fetch(`data/proveedores.json?v=${Date.now()}`);
   const manifiesto = await res.json();
-  if (!res.ok || !manifiesto || !Array.isArray(manifiesto.proveedores)) {
-    const detalle = manifiesto?.error || `HTTP ${res.status}`;
-    throw new Error(`SBR_MANIFEST_LOAD_FAILED: ${detalle}`);
-  }
   return manifiesto.proveedores.map(p => ({ id: p.id, label: p.nombre_display }));
 }
 
@@ -275,7 +271,6 @@ function renderRecomendacionesCapitulo(recomendaciones, capId) {
   if (filtradas.length === 0) return "";
   return `
     <div class="section-kicker" style="margin-top:36px;">Executive Recommendations</div>
-    <div class="exec-table-wrap">
     <table class="exec-table">
       <thead><tr><th>Acción</th><th>Responsable</th><th>Plazo</th><th>Prioridad</th></tr></thead>
       <tbody>
@@ -285,8 +280,7 @@ function renderRecomendacionesCapitulo(recomendaciones, capId) {
           <td class="priority-${r.prioridad==='Alta'?'high':'media'}">${r.prioridad}</td>
         </tr>`).join("")}
       </tbody>
-    </table>
-    </div>`;
+    </table>`;
 }
 
 function renderDashboard(payload, snap) {
@@ -338,47 +332,204 @@ function renderDiagnostico(payload, snap) {
 }
 
 function renderTendencias(payload, snap) {
-  const MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-  const multi = snap.serie_multianual;
-  const anios = Object.keys(multi).sort();
-  const allVals = anios.flatMap(a => multi[a]);
-  const min = Math.min(...allVals), max = Math.max(...allVals);
-  const colors = {[anios[0]]:"#C9CBC4", [anios[1]]:"#4C6C87", [anios[2]]:"#1C3D5A"};
-  const n = multi[anios[0]].length;
-  const lines = anios.map(a => {
-    const pts = multi[a].map((v,i) => `${10+(i*(740/(n-1)))},${192-((v-min)/(max-min))*172}`).join(" ");
-    return `<polyline points="${pts}" fill="none" stroke="${colors[a]||"#1C3D5A"}" stroke-width="${a===anios[anios.length-1]?2.4:1.6}"/>`;
-  }).join("");
-  const mom = snap.momentum_mensual;
-  const rows = mom.slice(1).map(m => ({
-    nombre:MESES[m.mes]||`Mes ${m.mes}`, tag:"MoM", valor:m.mom_pct, valorTexto:fmtPct(m.mom_pct)
-  }));
-  const qoq = snap.qoq;
-  const kpis = [
-    {label:"MAT / R12", value:fmtMonto(snap.kpis.mat_r12), delta:fmtPct(snap.kpis.yoy_mat_pct), deltaClass:deltaClass(snap.kpis.yoy_mat_pct)},
-    {label:"Venta YTD", value:fmtMonto(snap.kpis.venta_ytd), delta:fmtPct(snap.kpis.yoy_ytd_pct), deltaClass:deltaClass(snap.kpis.yoy_ytd_pct)},
+  const MESES = [
+    "",
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
   ];
+
+  const multi = snap.serie_multianual || {};
+  const anios = Object.keys(multi).sort((a,b) => Number(a) - Number(b));
+
+  const allVals = anios.flatMap(a => multi[a] || []);
+  const min = allVals.length ? Math.min(...allVals) : 0;
+  const max = allVals.length ? Math.max(...allVals) : 1;
+  const rango = Math.max(max - min, 1);
+
+  const colors = {};
+  anios.forEach((a, i) => {
+    if (i === anios.length - 1) colors[a] = "#1C3D5A";
+    else if (i === anios.length - 2) colors[a] = "#4C6C87";
+    else colors[a] = "#A9B0B5";
+  });
+
+  const n = Math.max(...anios.map(a => (multi[a] || []).length), 1);
+
+  const lines = anios.map(a => {
+    const serie = multi[a] || [];
+    if (!serie.length) return "";
+
+    const pts = serie.map((v,i) => {
+      const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
+      const py = 190 - ((v - min) / rango) * 155;
+      return `${px.toFixed(1)},${py.toFixed(1)}`;
+    }).join(" ");
+
+    return `
+      <polyline
+        points="${pts}"
+        fill="none"
+        stroke="${colors[a]}"
+        stroke-width="${a === anios[anios.length - 1] ? 2.8 : 1.6}"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+    `;
+  }).join("");
+
+  const mom = snap.momentum_mensual || [];
+  const momVals = mom.map(m => Number(m.mom_pct) || 0);
+  const momMax = Math.max(...momVals.map(v => Math.abs(v)), 1);
+
+  const momentumRows = mom.map(m => {
+    const pct = Number(m.mom_pct) || 0;
+    const valor = Number(m.valor) || 0;
+    const width = Math.min(Math.abs(pct) / momMax * 100, 100);
+
+    return `
+      <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;align-items:center;min-height:38px;border-bottom:1px solid var(--line);">
+        <div style="font-size:13px;">${MESES[m.mes] || `Mes ${m.mes}`}</div>
+        <div style="height:6px;background:var(--line);overflow:hidden;">
+          <div style="height:100%;width:${width}%;min-width:2px;background:${pct >= 0 ? "var(--positive)" : "var(--negative)"};"></div>
+        </div>
+        <div style="font-size:13px;font-weight:600;text-align:right;white-space:nowrap;color:${pct >= 0 ? "var(--positive)" : "var(--negative)"};">
+          ${fmtPct(pct)}
+        </div>
+        <div style="font-size:11.5px;color:var(--ink-muted);text-align:right;white-space:nowrap;">
+          ${fmtMontoK(valor)}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const qoq = snap.qoq;
+
+  const kpis = [
+    {
+      label:"MAT / R12",
+      value:fmtMonto(snap.kpis.mat_r12),
+      delta:fmtPct(snap.kpis.yoy_mat_pct),
+      deltaClass:deltaClass(snap.kpis.yoy_mat_pct)
+    },
+    {
+      label:"Venta YTD",
+      value:fmtMonto(snap.kpis.venta_ytd),
+      delta:fmtPct(snap.kpis.yoy_ytd_pct),
+      deltaClass:deltaClass(snap.kpis.yoy_ytd_pct)
+    }
+  ];
+
   if (qoq) {
-    kpis.push({label:`QoQ (${qoq.trimestre_actual} vs. ${qoq.trimestre_anterior})`, value:fmtPct(qoq.qoq_pct), delta:qoq.trimestre_actual_completo?"":"último trimestre completo", deltaClass:deltaClass(qoq.qoq_pct)});
+    kpis.push({
+      label:`QoQ (${qoq.trimestre_actual} vs. ${qoq.trimestre_anterior})`,
+      value:fmtPct(qoq.qoq_pct),
+      delta:qoq.trimestre_actual_completo
+        ? "Trimestre completo"
+        : "Último trimestre completo",
+      deltaClass:deltaClass(qoq.qoq_pct)
+    });
   }
+
   return `
     <div class="kicker">Capítulo 03 — Tendencias</div>
-    <h1 class="thesis">Evolución acumulada, comparativo ${anios.join("–")}</h1>
-    <p class="dek">Evolución mensual acumulada hasta la fecha operativa del período.</p>
+
+    <h1 class="thesis">
+      Evolución acumulada y señales de aceleración comercial
+    </h1>
+
+    <p class="dek">
+      Lectura de la trayectoria de ventas, comparación interanual y momentum
+      mensual hasta la fecha operativa del período.
+    </p>
+
     ${kpiStrip(kpis)}
+
     ${renderExecSummary(snap.hallazgos["03"])}
+
     <div class="section">
-      <div class="section-kicker">¿Cómo evolucionan los indicadores en el tiempo?</div>
-      <h2 class="section-title">Acumulado mensual por año</h2>
-      <svg viewBox="0 0 760 210" width="100%" height="210">
-        <line x1="0" y1="192" x2="760" y2="192" stroke="#E4E5E0"/>${lines}
+
+      <div class="section-kicker">
+        ¿Cómo evoluciona la venta acumulada?
+      </div>
+
+      <h2 class="section-title">
+        Trayectoria acumulada por año
+      </h2>
+
+      <svg
+        viewBox="0 0 760 220"
+        width="100%"
+        height="220"
+        aria-label="Evolución acumulada de ventas por año"
+      >
+        <line
+          x1="30"
+          y1="190"
+          x2="730"
+          y2="190"
+          stroke="#E4E5E0"
+        />
+
+        <line
+          x1="30"
+          y1="112"
+          x2="730"
+          y2="112"
+          stroke="#E4E5E0"
+          stroke-dasharray="3 5"
+        />
+
+        ${lines}
       </svg>
-      <div class="panel-note">${anios.map(a=>`<span style="color:${colors[a]};">● ${a}</span>`).join("&nbsp;&nbsp;")}</div>
-      <div class="section-kicker" style="margin-top:40px;">¿Está acelerando o desacelerando?</div>
-      ${renderContribList(rows)}
-      ${renderOportunidadesRiesgos(snap.hallazgos["03"])}
-      ${renderRecomendacionesCapitulo(snap.recomendaciones, "03")}
-    </div>`;
+
+      <div style="display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-muted);margin-top:4px;">
+        ${anios.map(a => `
+          <span>
+            <span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:${colors[a]};vertical-align:middle;"></span>
+            ${a}
+          </span>
+        `).join("")}
+      </div>
+
+      <div class="panel-note">
+        La comparación se realiza sobre meses equivalentes hasta la fecha
+        operativa disponible.
+      </div>
+
+    </div>
+
+    <div class="section">
+
+      <div class="section-kicker">
+        ¿Está acelerando o desacelerando?
+      </div>
+
+      <h2 class="section-title">
+        Momentum mensual
+      </h2>
+
+      <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;padding:0 0 9px;border-bottom:1px solid var(--line-strong);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;">
+        <span>Mes</span>
+        <span>Variación MoM</span>
+        <span style="text-align:right;">%</span>
+        <span style="text-align:right;">Venta</span>
+      </div>
+
+      <div style="width:100%;max-width:760px;">
+        ${momentumRows}
+      </div>
+
+      <div class="panel-note">
+        MoM compara cada mes contra el mes inmediatamente anterior.
+        La primera observación no representa una variación comparable.
+      </div>
+
+    </div>
+
+    ${renderOportunidadesRiesgos(snap.hallazgos["03"])}
+
+    ${renderRecomendacionesCapitulo(snap.recomendaciones, "03")}
+  `;
 }
 
 function renderPortafolio(payload, snap) {
@@ -406,8 +557,8 @@ function renderDrillDownClientesPerdidos(detalle) {
   return `
     <details style="margin-top:20px;">
       <summary style="cursor:pointer;font-size:12.5px;color:var(--primary);font-weight:600;">Ver clientes (${detalle.length})</summary>
-      <div style="margin-top:16px;max-height:420px;overflow-y:auto;overflow-x:auto;border:1px solid var(--line);">
-        <table class="exec-table exec-table-wrap-inner" style="margin-top:0;min-width:520px;">
+      <div style="margin-top:16px;max-height:420px;overflow-y:auto;border:1px solid var(--line);">
+        <table class="exec-table" style="margin-top:0;">
           <thead><tr><th>Cliente</th><th>Venta período anterior</th><th>Impacto perdido</th><th>Segmento</th><th>Prioridad</th></tr></thead>
           <tbody>
             ${detalle.map(c => `<tr>
@@ -475,7 +626,6 @@ function renderPlan(payload, snap) {
       {label:"Acciones consolidadas", value:recos.length, delta:"de 4 capítulos"},
       {label:"Prioridad alta", value:alta, delta:"ligadas a los mayores impactos en C$"},
     ])}
-    <div class="exec-table-wrap">
     <table class="exec-table">
       <thead><tr><th>Acción</th><th>Origen</th><th>Responsable</th><th>Plazo</th><th>Prioridad</th></tr></thead>
       <tbody>
@@ -486,8 +636,7 @@ function renderPlan(payload, snap) {
           <td class="priority-${r.prioridad==='Alta'?'high':'media'}">${r.prioridad}</td>
         </tr>`).join("")}
       </tbody>
-    </table>
-    </div>`;
+    </table>`;
 }
 
 const RENDERERS = {
@@ -504,31 +653,11 @@ function render() {
 }
 
 async function init() {
-  try {
-    PROVEEDORES = await cargarManifiestoProveedores();
-    if (!PROVEEDORES.length) throw new Error("SBR_MANIFEST_EMPTY");
-    proveedorActual = PROVEEDORES[0].id;
-    const payload = await cargarProveedor(proveedorActual);
-    if (!payload || !payload.snapshots || typeof payload.snapshots !== "object") {
-      throw new Error("SBR_PROVIDER_DATA_INVALID");
-    }
-    const fechas = Object.keys(payload.snapshots).sort();
-    if (!fechas.length) throw new Error("SBR_PROVIDER_NO_SNAPSHOTS");
-    fechaActual = fechas[fechas.length - 1];
-    render();
-  } catch (error) {
-    console.error("SBR application initialization error", error);
-    document.getElementById("app").innerHTML = `
-      <div class="auth-shell">
-        <div class="auth-card">
-          <div class="auth-brand">SUINSA Commercial Intelligence</div>
-          <div class="auth-kicker">Supplier Business Review</div>
-          <h1>No fue posible cargar el tablero</h1>
-          <p class="auth-description">La autenticación ya fue procesada, pero la aplicación no pudo cargar los datos SBR.</p>
-          <div class="auth-error" style="display:block;">${error?.message || "Error de carga de datos."}</div>
-          <button type="button" onclick="location.reload()">Reintentar</button>
-        </div>
-      </div>`;
-  }
+  PROVEEDORES = await cargarManifiestoProveedores();
+  proveedorActual = PROVEEDORES[0].id;
+  const payload = await cargarProveedor(proveedorActual);
+  const fechas = Object.keys(payload.snapshots).sort();
+  fechaActual = fechas[fechas.length - 1];  // fecha operativa más reciente por defecto
+  render();
 }
 init();
