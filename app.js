@@ -301,6 +301,23 @@ function renderMatrix(matriz) {
   </svg>
   <div class="panel-note">Pase el cursor sobre cualquier punto para ver el detalle completo · etiquetas visibles: top 3 por participación y extremos de crecimiento</div>`;
 }
+function normalizarTextoEjecutivo(texto) {
+  if (texto === null || texto === undefined) return "";
+  const textoStr = String(texto);
+
+  // Hace más explícita la lógica de priorización económica en el SBR,
+  // sin modificar los datos ni la lógica de cálculo del motor.
+  return textoStr
+    .replace(
+      /^Representan (C\\$[\\d,.]+) — prioridad por impacto en C\\$, no por volumen de clientes\\.$/,
+      "Representan $1 en venta potencial a recuperar; por ello, la prioridad se define por impacto económico y no por cantidad de clientes."
+    )
+    .replace(
+      "La prioridad de contacto debe ser por impacto en C$, no por cantidad de clientes.",
+      "La recuperación debe priorizarse por valor económico potencial, no por cantidad de clientes."
+    );
+}
+
 function renderExecSummary(hallazgos) {
   if (!hallazgos || hallazgos.length === 0) return "";
   return `
@@ -309,7 +326,7 @@ function renderExecSummary(hallazgos) {
       ${hallazgos.map(h => `
         <div class="entry">
           <div class="entry-title">${h.texto}</div>
-          <div class="entry-body">${h.implicacion}</div>
+          <div class="entry-body">${normalizarTextoEjecutivo(h.implicacion)}</div>
         </div>`).join("")}
     </div>`;
 }
@@ -343,7 +360,7 @@ function renderRecomendacionesCapitulo(recomendaciones, capId) {
       <thead><tr><th>Acción</th><th>Responsable</th><th>Plazo</th><th>Prioridad</th></tr></thead>
       <tbody>
         ${filtradas.map(r => `<tr>
-          <td><b>${r.titulo}</b><br><span style="color:var(--ink-muted);font-size:12px;">${r.detalle}</span></td>
+          <td><b>${r.titulo}</b><br><span style="color:var(--ink-muted);font-size:12px;">${normalizarTextoEjecutivo(r.detalle)}</span></td>
           <td>${r.dueno}</td><td>${r.plazo}</td>
           <td class="priority-${r.prioridad==='Alta'?'high':'media'}">${r.prioridad}</td>
         </tr>`).join("")}
