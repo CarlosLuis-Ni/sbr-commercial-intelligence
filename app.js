@@ -378,26 +378,25 @@ function renderTendencias(payload, snap) {
   }).join("");
 
   const mom = snap.momentum_mensual || [];
-  const momVals = mom.map(m => Number(m.mom_pct) || 0);
+  const momVals = mom.slice(1).map(m => Number(m.mom_pct) || 0);
   const momMax = Math.max(...momVals.map(v => Math.abs(v)), 1);
 
-  const momentumRows = mom.map(m => {
+  const momentumRows = mom.map((m, idx) => {
     const pct = Number(m.mom_pct) || 0;
     const valor = Number(m.valor) || 0;
-    const width = Math.min(Math.abs(pct) / momMax * 100, 100);
+    const comparable = idx > 0;
+    const width = comparable ? Math.min(Math.abs(pct) / momMax * 100, 100) : 0;
+    const pctTexto = comparable ? fmtPct(pct) : "—";
+    const color = comparable ? (pct >= 0 ? "var(--positive)" : "var(--negative)") : "var(--ink-faint)";
 
     return `
       <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;align-items:center;min-height:38px;border-bottom:1px solid var(--line);">
         <div style="font-size:13px;">${MESES[m.mes] || `Mes ${m.mes}`}</div>
         <div style="height:6px;background:var(--line);overflow:hidden;">
-          <div style="height:100%;width:${width}%;min-width:2px;background:${pct >= 0 ? "var(--positive)" : "var(--negative)"};"></div>
+          <div style="height:100%;width:${width}%;min-width:${comparable ? "2px" : "0"};background:${color};"></div>
         </div>
-        <div style="font-size:13px;font-weight:600;text-align:right;white-space:nowrap;color:${pct >= 0 ? "var(--positive)" : "var(--negative)"};">
-          ${fmtPct(pct)}
-        </div>
-        <div style="font-size:11.5px;color:var(--ink-muted);text-align:right;white-space:nowrap;">
-          ${fmtMontoK(valor)}
-        </div>
+        <div style="font-size:13px;font-weight:600;text-align:right;white-space:nowrap;color:${color};">${pctTexto}</div>
+        <div style="font-size:11.5px;color:var(--ink-muted);text-align:right;white-space:nowrap;">${fmtMontoK(valor)}</div>
       </div>
     `;
   }).join("");
@@ -480,6 +479,11 @@ function renderTendencias(payload, snap) {
         />
 
         ${lines}
+        ${Array.from({length:n}, (_,i) => {
+          const x = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
+          const mes = i + 1;
+          return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>`;
+        }).join("")}
       </svg>
 
       <div style="display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-muted);margin-top:4px;">
@@ -520,8 +524,7 @@ function renderTendencias(payload, snap) {
       </div>
 
       <div class="panel-note">
-        MoM compara cada mes contra el mes inmediatamente anterior.
-        La primera observación no representa una variación comparable.
+        MoM compara cada mes contra el mes inmediatamente anterior. La primera observación no representa una variación comparable y se muestra como “—”.
       </div>
 
     </div>
