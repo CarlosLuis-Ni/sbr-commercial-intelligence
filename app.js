@@ -572,7 +572,7 @@ function renderPortafolio(payload, snap) {
 function renderDrillDownClientesPerdidos(detalle) {
   if (!detalle || detalle.length === 0) return "";
   return `
-    <details open style="margin-top:20px;">
+    <details style="margin-top:20px;">
       <summary class="client-drill-summary">Ver clientes (${detalle.length})</summary>
       <div style="margin-top:16px;max-height:420px;overflow-y:auto;border:1px solid var(--line);">
         <table class="exec-table" style="margin-top:0;">
