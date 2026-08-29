@@ -64,64 +64,105 @@ const fmtChurnDelta = snap => (snap.kpis.churn_pct === null || snap.kpis.churn_p
 const deltaClass = v => (v===null||v===undefined) ? "" : v>0 ? "up" : v<0 ? "down" : "";
 
 /* Gobierno de transición de portafolio — ALTASA 2026.
-   Mantiene intacta la historia y corrige únicamente la interpretación ejecutiva. */
+   Regla: conservar la historia original y corregir únicamente la interpretación
+   ejecutiva. La sustitución NO se aplica globalmente a nombres de productos. */
 const TRANSICIONES_PORTAFOLIO = {
   "ALTASTRESS C/GINSENG 10 VIALES 15ML (ALTASA)": "STRESS FORTE CON GINSENG 10 VIALES 15ML (CAMAYA)",
   "ALTASTRESS CAJA X 30 GRAGEAS (ALTASA)": "STRESS FORTE CAJA X 30 GRAGEAS (CAMAYA)"
 };
-function nombreConTransicion(nombre) {
-  if (typeof nombre !== "string") return nombre;
-  return Object.entries(TRANSICIONES_PORTAFOLIO).reduce((s,[origen,sucesor]) =>
-    s.split(origen).join(origen + " — descontinuado → " + sucesor), nombre);
+
+function esProductoDescontinuado(nombre) {
+  return Object.prototype.hasOwnProperty.call(TRANSICIONES_PORTAFOLIO, nombre);
 }
+
+function etiquetaHistorica(nombre) {
+  if (typeof nombre !== "string") return nombre;
+  return esProductoDescontinuado(nombre) ? nombre + " — descontinuado" : nombre;
+}
+
 function transformarHallazgo(h) {
   if (!h) return h;
   const texto = String(h.texto || "");
   const implicacion = String(h.implicacion || "");
   const encontrado = Object.entries(TRANSICIONES_PORTAFOLIO).find(([origen]) =>
-    (texto + " " + implicacion).includes(origen));
+    (texto + " " + implicacion).includes(origen)
+  );
   if (!encontrado) return h;
+
   const [origen, sucesor] = encontrado;
+  const textoNuevo = texto.replace(origen, etiquetaHistorica(origen));
+  let implicacionNueva = implicacion.replace(origen, etiquetaHistorica(origen));
+
+  if (!/descontinuad|migrar|sustitut/i.test(implicacionNueva)) {
+    implicacionNueva = implicacionNueva
+      ? implicacionNueva + " Acción: migrar el revenue histórico hacia " + sucesor + "."
+      : "Producto descontinuado. Acción: migrar el revenue histórico hacia " + sucesor + ".";
+  }
+
   return {
     ...h,
-    texto: texto.replace(origen, origen + " — descontinuado → " + sucesor),
-    implicacion: implicacion
-      .replace(origen, origen + " (producto descontinuado)")
-      .replace(/recuper(ar|ación)\b/gi, "sustituir por " + sucesor)
+    texto: textoNuevo,
+    implicacion: implicacionNueva
   };
 }
+
 function transformarRecomendacion(r) {
   if (!r) return r;
   const texto = String(r.titulo || "") + " " + String(r.detalle || "");
   const matches = Object.entries(TRANSICIONES_PORTAFOLIO).filter(([origen]) => texto.includes(origen));
   if (!matches.length) return r;
+
   const sucesores = [...new Set(matches.map(([,s]) => s))];
+
   if (r.capitulo_origen === "02") {
     return {
       ...r,
       titulo: matches.length === 1
-        ? "Gestionar la transición de " + matches[0][0] + " a " + sucesores[0]
-        : "Gestionar la transición de ALTASTRESS a los sustitutos STRESS FORTE",
-      detalle: "La caída histórica corresponde a la descontinuación del SKU. No debe interpretarse como demanda recuperable. Medir migración de clientes, cobertura y venta del sustituto vigente."
+        ? "Gestionar la transición hacia " + sucesores[0]
+        : "Gestionar la transición de ALTASTRESS hacia STRESS FORTE",
+      detalle: matches.length === 1
+        ? "La caída histórica corresponde a la descontinuación del SKU. No debe interpretarse como demanda recuperable. Priorizar la migración de clientes y revenue histórico hacia " + sucesores[0] + "."
+        : "La caída histórica corresponde a la descontinuación de los SKU. No debe interpretarse como demanda recuperable. Priorizar la migración de clientes y revenue histórico hacia los sustitutos STRESS FORTE."
     };
   }
+
   if (r.capitulo_origen === "04") {
     return {
       ...r,
       titulo: matches.length === 1
         ? "Acelerar la migración hacia " + sucesores[0]
         : "Acelerar la migración hacia los sustitutos STRESS FORTE",
-      detalle: "Los SKU ALTASTRESS fueron descontinuados por ALTASA. Priorizar cobertura, activación y seguimiento de clientes que anteriormente compraban los productos retirados."
+      detalle: matches.length === 1
+        ? "ALTASA descontinuó el SKU. Priorizar cobertura, activación y seguimiento de clientes que anteriormente compraban el producto, para trasladar el revenue al sustituto vigente."
+        : "ALTASA descontinuó los SKU. Priorizar cobertura, activación y seguimiento de clientes que anteriormente compraban los productos retirados, para trasladar el revenue a los sustitutos vigentes."
     };
   }
-  return {...r, titulo:nombreConTransicion(r.titulo), detalle:nombreConTransicion(r.detalle)};
+
+  return {
+    ...r,
+    titulo: String(r.titulo || "").replace(
+      /ALTASTRESS C\/GINSENG 10 VIALES 15ML \(ALTASA\)|ALTASTRESS CAJA X 30 GRAGEAS \(ALTASA\)/g,
+      match => etiquetaHistorica(match)
+    ),
+    detalle: String(r.detalle || "").replace(
+      /ALTASTRESS C\/GINSENG 10 VIALES 15ML \(ALTASA\)|ALTASTRESS CAJA X 30 GRAGEAS \(ALTASA\)/g,
+      match => etiquetaHistorica(match)
+    )
+  };
 }
+
 function prepararVista(snap) {
   const vista = {...snap};
-  vista.top_movers = (snap.top_movers || []).map(m => ({...m, marca:nombreConTransicion(m.marca)}));
-  vista.matriz_portafolio = (snap.matriz_portafolio || []).map(m => ({...m, marca:nombreConTransicion(m.marca)}));
+
+  // Top movers y matriz conservan el nombre histórico del SKU.
+  // El estado de descontinuación se comunica en hallazgos/recomendaciones,
+  // no se repite en cada visualización.
+  vista.top_movers = (snap.top_movers || []).map(m => ({...m}));
+  vista.matriz_portafolio = (snap.matriz_portafolio || []).map(m => ({...m}));
+
   vista.hallazgos = Object.fromEntries(Object.entries(snap.hallazgos || {}).map(([cap,items]) =>
-    [cap, (items || []).map(transformarHallazgo)]));
+    [cap, (items || []).map(transformarHallazgo)]
+  ));
   vista.recomendaciones = (snap.recomendaciones || []).map(transformarRecomendacion);
   return vista;
 }
