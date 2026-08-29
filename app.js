@@ -871,11 +871,11 @@ function renderPlan(payload, snap) {
   const CAP_NOMBRE = {"02":"Diagnóstico","03":"Tendencias","04":"Portafolio","05":"Clientes"};
   return `
     <div class="kicker">Capítulo 06 — Plan de Acción</div>
-    <h1 class="thesis">${recos.length} compromisos generados por el motor de recomendaciones</h1>
-    <p class="dek">Compromisos priorizados por impacto en la venta, con responsable y plazo.</p>
+    <h1 class="thesis">${recos.length} acciones prioritarias para capturar valor</h1>
+    <p class="dek">Acciones derivadas de los principales hallazgos del período, priorizadas por impacto económico y urgencia de ejecución.</p>
     ${kpiStrip([
-      {label:"Acciones consolidadas", value:recos.length, delta:"de 4 capítulos"},
-      {label:"Prioridad alta", value:alta, delta:"ligadas a los mayores impactos en C$"},
+      {label:"Acciones prioritarias", value:recos.length, delta:"derivadas de 4 capítulos"},
+      {label:"Alta prioridad", value:alta, delta:"mayor impacto económico"},
     ])}
     <table class="exec-table">
       <thead><tr><th>Acción</th><th>Origen</th><th>Responsable</th><th>Plazo</th><th>Prioridad</th></tr></thead>
