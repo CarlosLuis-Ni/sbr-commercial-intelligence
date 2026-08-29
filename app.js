@@ -871,7 +871,7 @@ function renderPlan(payload, snap) {
   const CAP_NOMBRE = {"02":"Diagnóstico","03":"Tendencias","04":"Portafolio","05":"Clientes"};
   return `
     <div class="kicker">Capítulo 06 — Plan de Acción</div>
-    <h1 class="thesis">${recos.length} acciones prioritarias para capturar valor</h1>
+    <h1 class="thesis">${recos.length} Acciones prioritarias para capturar valor</h1>
     <p class="dek">Acciones derivadas de los principales hallazgos del período, priorizadas por impacto económico y urgencia de ejecución.</p>
     ${kpiStrip([
       {label:"Acciones prioritarias", value:recos.length, delta:"derivadas de 4 capítulos"},
