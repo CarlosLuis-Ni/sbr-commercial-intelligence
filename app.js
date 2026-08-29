@@ -47,21 +47,102 @@ async function cargarProveedor(id) {
 
 const fmtMonto = v => `C$${(v/1_000_000).toFixed(2)}M`;
 const fmtMontoK = v => Math.abs(v) >= 1_000_000 ? fmtMonto(v) : `C$${(v/1000).toFixed(0)}K`;
-const fmtPct = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? "—" : `${Number(v)>0?"+" :""}${Number(v).toFixed(1)}%`;
-const fmtPctPlain = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? "—" : `${Number(v).toFixed(1)}%`;
-const tieneHistoriaR12 = payload => Array.isArray(payload?.serie_mensual) && payload.serie_mensual.length >= 12;
-const fmtR12Value = (payload, snap) => tieneHistoriaR12(payload) ? fmtMonto(snap.kpis.mat_r12) : "—";
-const fmtR12Delta = (payload, snap) => tieneHistoriaR12(payload)
-  ? `${fmtPct(snap.kpis.yoy_mat_pct)} vs. periodo anterior`
-  : "Sin 12 meses de historia";
-const fmtChurnValue = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? "—" : `${Number(v).toFixed(1)}%`;
-const fmtBaseClientes = snap => (snap.kpis.clientes_activos_anterior === 0 && snap.kpis.yoy_ytd_pct === null)
-  ? "Base inicial"
-  : `${snap.kpis.clientes_activos_anterior} en periodo anterior`;
-const fmtChurnDelta = snap => (snap.kpis.churn_pct === null || snap.kpis.churn_pct === undefined)
-  ? "Sin base comparable"
-  : `${snap.waterfall.n_perdidos} clientes perdidos`;
+const fmtPct = v => (v === null || v === undefined) ? "—" : `${v>0?"+":""}${v.toFixed(1)}%`;
 const deltaClass = v => (v===null||v===undefined) ? "" : v>0 ? "up" : v<0 ? "down" : "";
+
+// Gobierno de portafolio: productos descontinuados por ALTASA.
+// Se conservan sus cifras históricas; solo se corrige su interpretación ejecutiva.
+const PRODUCTOS_DESCONTINUADOS = {
+  "ALTASTRESS C/GINSENG 10 VIALES 15ML (ALTASA)": {
+    sucesor: "STRESS FORTE CON GINSENG 10 VIALES 15ML (CAMAYA)"
+  },
+  "ALTASTRESS CAJA X 30 GRAGEAS (ALTASA)": {
+    sucesor: "STRESS FORTE CAJA X 30 GRAGEAS (CAMAYA)"
+  }
+};
+
+function productoDescontinuado(nombre) {
+  return typeof nombre === "string" && Object.prototype.hasOwnProperty.call(PRODUCTOS_DESCONTINUADOS, nombre)
+    ? PRODUCTOS_DESCONTINUADOS[nombre]
+    : null;
+}
+
+function nombreProductoVista(nombre) {
+  const p = productoDescontinuado(nombre);
+  return p ? `${nombre} — DESCONTINUADO → ${p.sucesor}` : nombre;
+}
+
+function normalizarSnapParaVista(snap) {
+  // Clon defensivo: nunca modifica DATA ni los JSON fuente.
+  const vista = JSON.parse(JSON.stringify(snap));
+
+  vista.top_movers = (vista.top_movers || []).map(m => ({
+    ...m,
+    marca: nombreProductoVista(m.marca)
+  }));
+
+  vista.matriz_portafolio = (vista.matriz_portafolio || []).map(m => ({
+    ...m,
+    marca: nombreProductoVista(m.marca)
+  }));
+
+  const hallazgos = vista.hallazgos || {};
+  Object.keys(hallazgos).forEach(cap => {
+    hallazgos[cap] = (hallazgos[cap] || []).map(h => {
+      const texto = `${h.texto || ""} ${h.implicacion || ""}`;
+      const match = Object.keys(PRODUCTOS_DESCONTINUADOS).find(k => texto.includes(k));
+      if (!match) return h;
+      const sucesor = PRODUCTOS_DESCONTINUADOS[match].sucesor;
+      return {
+        ...h,
+        texto: `La caída registrada en ${match} corresponde a una descontinuación`,
+        implicacion: `El producto fue sustituido por ${sucesor}. La lectura correcta es transición de portafolio, no pérdida recuperable de demanda.`
+      };
+    });
+  });
+  vista.hallazgos = hallazgos;
+
+  vista.recomendaciones = (vista.recomendaciones || []).map(r => {
+    const texto = `${r.titulo || ""} ${r.detalle || ""}`;
+    const matches = Object.keys(PRODUCTOS_DESCONTINUADOS).filter(k => texto.includes(k));
+    if (!matches.length) return r;
+    const sucesores = matches.map(k => PRODUCTOS_DESCONTINUADOS[k].sucesor);
+    if (r.capitulo_origen === "02") {
+      return {
+        ...r,
+        titulo: matches.length === 1
+          ? `Gestionar la transición de ${matches[0]} a ${sucesores[0]}`
+          : `Registrar la descontinuación y transición de los productos ALTASTRESS`,
+        detalle: matches.length === 1
+          ? `La caída histórica corresponde a la descontinuación del producto. Medir clientes migrados, cobertura y venta del sustituto en lugar de plantear una recuperación del SKU retirado.`
+          : `ALTASA descontinuó ambos SKU y los sustituyó por ${sucesores.join(" y ")}. Medir migración, cobertura y venta de los sustitutos en lugar de plantear recuperación de los SKU retirados.`
+      };
+    }
+    if (r.capitulo_origen === "04") {
+      return {
+        ...r,
+        titulo: matches.length === 1
+          ? `Acelerar la migración hacia ${sucesores[0]}`
+          : `Acelerar la migración hacia los sustitutos STRESS FORTE`,
+        detalle: matches.length === 1
+          ? `Sustituto vigente del producto descontinuado. Priorizar cobertura, activación y seguimiento de clientes que anteriormente compraban el SKU retirado.`
+          : `Sustitutos vigentes de los productos ALTASTRESS descontinuados. Priorizar cobertura, activación y seguimiento de clientes que anteriormente compraban los SKU retirados.`
+      };
+    }
+    return r;
+  });
+
+  // Evita duplicados exactos dentro del plan ejecutivo.
+  const seen = new Set();
+  vista.recomendaciones = vista.recomendaciones.filter(r => {
+    const key = `${r.capitulo_origen}|${r.titulo}`.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return vista;
+}
 const MESES_LARGO = ["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const fmtFechaLarga = fechaISO => {
   const [anio, mes, dia] = fechaISO.split("-").map(Number);
@@ -188,151 +269,62 @@ function renderContribList(rows) {
 }
 
 function renderMatrix(matriz) {
-  // Todos los productos siguen siendo puntos con tooltip completo.
-  // Las etiquetas visibles se reservan a los productos más relevantes para
-  // mantener una lectura ejecutiva limpia, evitando superposiciones.
+  // Todos los productos se conservan como puntos (con tooltip nativo al
+  // pasar el mouse). Las etiquetas de texto en el gráfico se reservan solo
+  // para los productos estratégicamente relevantes (mayor participación,
+  // o los extremos de crecimiento), para que la zona con muchos productos
+  // chicos no quede ilegible por superposición de texto.
   const conCrecimiento = matriz.filter(m => m.yoy_pct !== null);
-  if (!conCrecimiento.length) {
-    return `<div class="panel-note">No hay datos suficientes para construir la matriz Revenue vs. Growth.</div>`;
-  }
-
-  const yoys = conCrecimiento.map(m => Number(m.yoy_pct));
+  const yoys = conCrecimiento.map(m => m.yoy_pct);
   const minY = Math.min(...yoys, -10), maxY = Math.max(...yoys, 10);
-  const maxPct = Math.max(...conCrecimiento.map(m => Number(m.pct_participacion)), 1);
-  const x = v => 40 + ((v - minY) / Math.max(maxY - minY, 1)) * 640;
+  const maxPct = Math.max(...matriz.map(m => m.pct_participacion));
+  const x = v => 40 + ((v - minY) / (maxY - minY)) * 640;
   const y = v => 340 - (v / maxPct) * 300;
   const zeroX = x(0);
 
-  // Etiquetamos solo los 3 productos de mayor participación y los extremos
-  // de crecimiento. El resto conserva tooltip al pasar el cursor.
-  const porParticipacion = [...conCrecimiento]
-    .sort((a,b) => Number(b.pct_participacion) - Number(a.pct_participacion));
-  const relevantes = [];
-  const addRelevant = m => {
-    if (m && !relevantes.some(r => r.marca === m.marca)) relevantes.push(m);
-  };
-  porParticipacion.slice(0, 3).forEach(addRelevant);
-  addRelevant(conCrecimiento.reduce((best, m) => Number(m.yoy_pct) > Number(best.yoy_pct) ? m : best, conCrecimiento[0]));
-  addRelevant(conCrecimiento.reduce((worst, m) => Number(m.yoy_pct) < Number(worst.yoy_pct) ? m : worst, conCrecimiento[0]));
+  // Productos relevantes a etiquetar: top 5 por participación + los
+  // extremos de crecimiento (mayor y menor YoY), sin duplicar.
+  const porParticipacion = [...conCrecimiento].sort((a,b) => b.pct_participacion - a.pct_participacion);
+  const relevantesSet = new Set(porParticipacion.slice(0, 5).map(m => m.marca));
+  const mayorCrecimiento = conCrecimiento.reduce((best, m) => m.yoy_pct > best.yoy_pct ? m : best, conCrecimiento[0]);
+  const menorCrecimiento = conCrecimiento.reduce((worst, m) => m.yoy_pct < worst.yoy_pct ? m : worst, conCrecimiento[0]);
+  if (mayorCrecimiento) relevantesSet.add(mayorCrecimiento.marca);
+  if (menorCrecimiento) relevantesSet.add(menorCrecimiento.marca);
 
-  // Colocación de etiquetas con posiciones candidatas y detección de
-  // colisiones. Así evitamos que nombres cercanos se impriman uno sobre otro.
-  const ocupadas = [];
-  const labelWidth = texto => Math.min(175, Math.max(58, texto.length * 5.8));
-  const solapa = (a,b) => !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-
+  // Posicionamiento de etiquetas: se ordenan por X y se escalona la altura
+  // cuando dos quedarían demasiado cerca, para reducir superposición.
+  const relevantes = conCrecimiento
+    .filter(m => relevantesSet.has(m.marca))
+    .sort((a, b) => x(a.yoy_pct) - x(b.yoy_pct));
+  let ultimoX = -Infinity, nivel = 0;
   const etiquetas = relevantes.map(m => {
-    const px = x(Number(m.yoy_pct));
-    const py = y(Number(m.pct_participacion));
-    const r = Math.max(8, Math.sqrt(Number(m.pct_participacion)) * 6);
-    const nombreCorto = String(m.marca).split(" (")[0].trim().slice(0, 24);
-    const w = labelWidth(nombreCorto);
-    const h = 12;
-
-    const candidatos = [
-      {dx:0, dy:-(r+18), anchor:"middle"},
-      {dx:r+10, dy:-(r+8), anchor:"start"},
-      {dx:-(r+10), dy:-(r+8), anchor:"end"},
-      {dx:r+12, dy:5, anchor:"start"},
-      {dx:-(r+12), dy:5, anchor:"end"},
-      {dx:0, dy:r+20, anchor:"middle"},
-      {dx:r+10, dy:r+18, anchor:"start"},
-      {dx:-(r+10), dy:r+18, anchor:"end"}
-    ];
-
-    let elegido = null;
-    for (const c of candidatos) {
-      const tx = px + c.dx;
-      const ty = py + c.dy;
-      const left = c.anchor === "start" ? tx : c.anchor === "end" ? tx - w : tx - w/2;
-      const right = left + w;
-      const top = ty - h;
-      const bottom = ty + 2;
-
-      // Mantener las etiquetas dentro del área útil del SVG.
-      if (left < 22 || right > 698 || top < 22 || bottom > 342) continue;
-
-      const box = {left, right, top, bottom};
-      if (!ocupadas.some(o => solapa(box, o))) {
-        elegido = {tx, ty, anchor:c.anchor, box};
-        break;
-      }
-    }
-
-    // Si todas las posiciones candidatas chocan, conserva una separación
-    // vertical mínima en una posición superior, priorizando legibilidad.
-    if (!elegido) {
-      let ty = Math.max(24, py - r - 18);
-      while (ocupadas.some(o => solapa(
-        {left:px-w/2,right:px+w/2,top:ty-h,bottom:ty+2}, o
-      )) && ty < 335) ty += 15;
-      elegido = {
-        tx:Math.min(698-w/2, Math.max(22+w/2, px)),
-        ty:Math.min(335, ty),
-        anchor:"middle",
-        box:{left:Math.max(22,px-w/2),right:Math.min(698,px+w/2),top:ty-h,bottom:ty+2}
-      };
-    }
-
-    ocupadas.push(elegido.box);
-    const lineX2 = elegido.anchor === "start" ? elegido.tx - 4 :
-                    elegido.anchor === "end" ? elegido.tx + 4 : elegido.tx;
-    const lineY2 = elegido.ty - 3;
-
-    return `<line x1="${px.toFixed(1)}" y1="${(py-r-2).toFixed(1)}" x2="${lineX2.toFixed(1)}" y2="${lineY2.toFixed(1)}" stroke="#C9CBC4" stroke-width="1"/>
-      <text x="${elegido.tx.toFixed(1)}" y="${elegido.ty.toFixed(1)}" class="matrix-point" text-anchor="${elegido.anchor}">${nombreCorto}</text>`;
+    const px = x(m.yoy_pct), py = y(m.pct_participacion);
+    const r = Math.max(8, Math.sqrt(m.pct_participacion) * 6);
+    if (px - ultimoX < 140) { nivel = (nivel + 1) % 4; } else { nivel = 0; }
+    ultimoX = px;
+    const offset = r + 14 + nivel * 18;
+    const nombreCorto = m.marca.split(" (")[0].slice(0, 22);
+    return `<line x1="${px}" y1="${py - r - 2}" x2="${px}" y2="${py - offset + 3}" stroke="#C9CBC4" stroke-width="1"/>
+      <text x="${px}" y="${py - offset}" class="matrix-point" text-anchor="middle">${nombreCorto}</text>`;
   }).join("");
 
   const puntos = conCrecimiento.map(m => {
-    const r = Math.max(8, Math.sqrt(Number(m.pct_participacion)) * 6);
-    const color = Number(m.yoy_pct) >= 0 ? "#3F6B52" : "#7A4038";
-    return `<circle cx="${x(Number(m.yoy_pct)).toFixed(1)}" cy="${y(Number(m.pct_participacion)).toFixed(1)}" r="${r.toFixed(1)}" fill="${color}" opacity="0.75">
-      <title>${m.marca} — Participación ${Number(m.pct_participacion).toFixed(1)}% · Crecimiento ${fmtPct(Number(m.yoy_pct))}</title>
+    const r = Math.max(8, Math.sqrt(m.pct_participacion) * 6);
+    const color = m.yoy_pct >= 0 ? "#3F6B52" : "#7A4038";
+    return `<circle cx="${x(m.yoy_pct)}" cy="${y(m.pct_participacion)}" r="${r}" fill="${color}" opacity="0.75">
+      <title>${m.marca} — Participación ${m.pct_participacion.toFixed(1)}% · Crecimiento ${fmtPct(m.yoy_pct)}</title>
     </circle>`;
   }).join("");
 
   return `<svg viewBox="0 0 720 380" width="100%" height="380">
-    <line x1="${zeroX.toFixed(1)}" y1="10" x2="${zeroX.toFixed(1)}" y2="345" stroke="#E4E5E0"/>
+    <line x1="${zeroX}" y1="10" x2="${zeroX}" y2="345" stroke="#E4E5E0"/>
     <line x1="20" y1="345" x2="700" y2="345" stroke="#E4E5E0"/>
     <text x="700" y="362" class="matrix-label" text-anchor="end">Crecimiento YoY →</text>
     <text x="24" y="20" class="matrix-label">↑ Participación</text>
     ${puntos}
     ${etiquetas}
   </svg>
-  <div class="panel-note">Pase el cursor sobre cualquier punto para ver el detalle completo · etiquetas visibles: top 3 por participación y extremos de crecimiento</div>`;
-}
-function normalizarTextoEjecutivo(texto) {
-  if (texto === null || texto === undefined) return "";
-  let textoStr = String(texto);
-
-  // Hace más explícita la lógica de priorización económica en el SBR,
-  // sin modificar los datos ni la lógica de cálculo del motor.
-  textoStr = textoStr
-    .replace(
-      /^Representan (C\$[\d,.]+) — prioridad por impacto en C\$, no por volumen de clientes\.$/,
-      "Representan $1 en venta potencial a recuperar; por ello, la prioridad se define por impacto económico y no por cantidad de clientes."
-    )
-    .replace(
-      "La prioridad de contacto debe ser por impacto en C$, no por cantidad de clientes.",
-      "La recuperación debe priorizarse por valor económico potencial, no por cantidad de clientes."
-    );
-
-  // En textos ejecutivos, los importes negativos menores de C$1M se muestran
-  // en miles para facilitar la lectura (p.ej. -0.94M → −C$940K).
-  // Los importes de C$1M o más conservan la notación en millones.
-  textoStr = textoStr.replace(/([−-]?)C?\$?([0-9]+(?:\.[0-9]+)?)M\b/g, (match, signo, numero) => {
-    const valor = Number(numero);
-    if (!Number.isFinite(valor)) return match;
-    const negativo = signo === "-" || signo === "−";
-    const abs = Math.abs(valor);
-    if (abs < 1) {
-      const miles = Math.round(abs * 1000);
-      return (negativo ? "−" : "") + "C$" + miles + "K";
-    }
-    return (negativo ? "−" : "") + "C$" + abs.toFixed(2) + "M";
-  });
-
-  return textoStr;
+  <div class="panel-note">Pase el cursor sobre cualquier punto para ver el detalle completo · etiquetas visibles: mayor participación y extremos de crecimiento</div>`;
 }
 
 function renderExecSummary(hallazgos) {
@@ -342,8 +334,8 @@ function renderExecSummary(hallazgos) {
     <div>
       ${hallazgos.map(h => `
         <div class="entry">
-          <div class="entry-title">${normalizarTextoEjecutivo(h.texto)}</div>
-          <div class="entry-body">${normalizarTextoEjecutivo(h.implicacion)}</div>
+          <div class="entry-title">${h.texto}</div>
+          <div class="entry-body">${h.implicacion}</div>
         </div>`).join("")}
     </div>`;
 }
@@ -353,7 +345,7 @@ function renderOportunidadesRiesgos(hallazgos) {
   const riesgos = (hallazgos || []).filter(h => h.tipo === "riesgo");
   if (oportunidades.length === 0 && riesgos.length === 0) return "";
   const col = (items, vacio) => items.length
-    ? items.map(h => `<div class="entry"><div class="entry-title">${normalizarTextoEjecutivo(h.texto)}</div><div class="entry-body">${normalizarTextoEjecutivo(h.implicacion)}</div></div>`).join("")
+    ? items.map(h => `<div class="entry"><div class="entry-title">${h.texto}</div><div class="entry-body">${h.implicacion}</div></div>`).join("")
     : `<div class="entry"><div class="entry-body" style="font-style:italic;">${vacio}</div></div>`;
   return `
     <div class="two-col" style="margin-top:32px;">
@@ -377,7 +369,7 @@ function renderRecomendacionesCapitulo(recomendaciones, capId) {
       <thead><tr><th>Acción</th><th>Responsable</th><th>Plazo</th><th>Prioridad</th></tr></thead>
       <tbody>
         ${filtradas.map(r => `<tr>
-          <td><b>${r.titulo}</b><br><span style="color:var(--ink-muted);font-size:12px;">${normalizarTextoEjecutivo(r.detalle)}</span></td>
+          <td><b>${r.titulo}</b><br><span style="color:var(--ink-muted);font-size:12px;">${r.detalle}</span></td>
           <td>${r.dueno}</td><td>${r.plazo}</td>
           <td class="priority-${r.prioridad==='Alta'?'high':'media'}">${r.prioridad}</td>
         </tr>`).join("")}
@@ -393,9 +385,9 @@ function renderDashboard(payload, snap) {
     <p class="dek">Fecha Operativa: ${snap.fecha_operativa}</p>
     ${kpiStrip([
       {label:"Venta YTD", value:fmtMonto(k.venta_ytd), delta:`${fmtPct(k.yoy_ytd_pct)} YoY`, deltaClass:deltaClass(k.yoy_ytd_pct)},
-      {label:"MAT / R12", value:fmtR12Value(payload, snap), delta:fmtR12Delta(payload, snap), deltaClass:deltaClass(k.yoy_mat_pct)},
-      {label:"Clientes activos", value:k.clientes_activos, delta:fmtBaseClientes(snap)},
-      {label:"Churn de cartera", value:fmtChurnValue(k.churn_pct), delta:fmtChurnDelta(snap), deltaClass:k.churn_pct === null ? "" : "down"},
+      {label:"MAT / R12", value:fmtMonto(k.mat_r12), delta:`${fmtPct(k.yoy_mat_pct)} vs. periodo anterior`, deltaClass:deltaClass(k.yoy_mat_pct)},
+      {label:"Clientes activos", value:k.clientes_activos, delta:`${k.clientes_activos_anterior} en periodo anterior`},
+      {label:"Churn de cartera", value:`${k.churn_pct}%`, delta:`${wf.n_perdidos} clientes perdidos`, deltaClass:"down"},
     ])}
     <div class="panel-grid">
       <div><div class="panel-title">Variación interanual (waterfall)</div>${renderWaterfall(wf)}</div>
@@ -419,8 +411,8 @@ function renderDiagnostico(payload, snap) {
     <p class="dek">Descomposición de la variación interanual del periodo.</p>
     ${kpiStrip([
       {label:"Venta YTD", value:fmtMonto(snap.kpis.venta_ytd), delta:`${fmtPct(snap.kpis.yoy_ytd_pct)} interanual`, deltaClass:deltaClass(snap.kpis.yoy_ytd_pct)},
-      {label:"MAT / R12", value:fmtR12Value(payload, snap), delta:tieneHistoriaR12(payload) ? fmtPct(snap.kpis.yoy_mat_pct) : "Sin 12 meses de historia", deltaClass:deltaClass(snap.kpis.yoy_mat_pct)},
-      {label:"Churn de cartera", value:fmtChurnValue(snap.kpis.churn_pct), delta:snap.kpis.churn_pct === null ? "Sin base comparable" : `${wf.n_perdidos} de ${wf.n_perdidos+wf.n_retenidos} clientes 2025`},
+      {label:"MAT / R12", value:fmtMonto(snap.kpis.mat_r12), delta:`${fmtPct(snap.kpis.yoy_mat_pct)}`, deltaClass:deltaClass(snap.kpis.yoy_mat_pct)},
+      {label:"Churn de cartera", value:`${snap.kpis.churn_pct}%`, delta:`${wf.n_perdidos} de ${wf.n_perdidos+wf.n_retenidos} clientes 2025`},
     ])}
     ${renderExecSummary(snap.hallazgos["02"])}
     <div class="section">
@@ -441,10 +433,10 @@ function renderTendencias(payload, snap) {
   ];
 
   const multi = snap.serie_multianual || {};
-  const anios = Object.keys(multi).filter(a => Number(a) >= 2023).sort((a,b) => Number(a) - Number(b));
+  const anios = Object.keys(multi).sort((a,b) => Number(a) - Number(b));
 
-  const allVals = anios.flatMap(a => (multi[a] || []).filter(v => Number.isFinite(Number(v))));
-  const min = 0;
+  const allVals = anios.flatMap(a => multi[a] || []);
+  const min = allVals.length ? Math.min(...allVals) : 0;
   const max = allVals.length ? Math.max(...allVals) : 1;
   const rango = Math.max(max - min, 1);
 
@@ -457,28 +449,11 @@ function renderTendencias(payload, snap) {
 
   const n = Math.max(...anios.map(a => (multi[a] || []).length), 1);
 
-  // Cuando un proveedor inicia operaciones durante el año, la serie puede
-  // comenzar en un mes distinto de enero. INFARMA, por ejemplo, inició en abril.
-  // El eje X debe respetar ese mes de inicio para no presentar abril como enero.
-  const mesInicioSerie = (() => {
-    if (anios.length !== 1 || !Array.isArray(payload?.serie_mensual) || !payload.serie_mensual.length) return 1;
-    const primerMes = String(payload.serie_mensual[0]?.mes || "").split("-")[1];
-    const mes = Number(primerMes);
-    return Number.isFinite(mes) && mes >= 1 && mes <= 12 ? mes : 1;
-  })();
-
   const lines = anios.map(a => {
     const serie = multi[a] || [];
     if (!serie.length) return "";
 
-    // Los ceros iniciales de años históricos representan ausencia de dato,
-    // no ventas reales. Se omiten para evitar una trayectoria engañosa.
-    const primerDato = serie.findIndex(v => Number(v) > 0);
-    const inicio = primerDato >= 0 ? primerDato : 0;
-    const puntosValidos = serie.map((v,i) => ({v:Number(v),i})).filter(p => p.i >= inicio && Number.isFinite(p.v) && p.v > 0);
-    if (puntosValidos.length < 2) return "";
-
-    const pts = puntosValidos.map(({v,i}) => {
+    const pts = serie.map((v,i) => {
       const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
       const py = 190 - ((v - min) / rango) * 155;
       return `${px.toFixed(1)},${py.toFixed(1)}`;
@@ -497,25 +472,26 @@ function renderTendencias(payload, snap) {
   }).join("");
 
   const mom = snap.momentum_mensual || [];
-  const momVals = mom.slice(1).map(m => Number(m.mom_pct) || 0);
+  const momVals = mom.map(m => Number(m.mom_pct) || 0);
   const momMax = Math.max(...momVals.map(v => Math.abs(v)), 1);
 
-  const momentumRows = mom.map((m, idx) => {
-    const pct = Number(m.mom_pct);
+  const momentumRows = mom.map(m => {
+    const pct = Number(m.mom_pct) || 0;
     const valor = Number(m.valor) || 0;
-    const comparable = idx > 0 && Number.isFinite(pct);
-    const width = comparable ? Math.min(Math.abs(pct) / momMax * 100, 100) : 0;
-    const pctTexto = comparable ? fmtPct(pct) : "—";
-    const color = comparable ? (pct >= 0 ? "var(--positive)" : "var(--negative)") : "var(--ink-faint)";
+    const width = Math.min(Math.abs(pct) / momMax * 100, 100);
 
     return `
       <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;align-items:center;min-height:38px;border-bottom:1px solid var(--line);">
         <div style="font-size:13px;">${MESES[m.mes] || `Mes ${m.mes}`}</div>
         <div style="height:6px;background:var(--line);overflow:hidden;">
-          <div style="height:100%;width:${width}%;min-width:${comparable ? "2px" : "0"};background:${color};"></div>
+          <div style="height:100%;width:${width}%;min-width:2px;background:${pct >= 0 ? "var(--positive)" : "var(--negative)"};"></div>
         </div>
-        <div style="font-size:13px;font-weight:600;text-align:right;white-space:nowrap;color:${color};">${pctTexto}</div>
-        <div style="font-size:11.5px;color:var(--ink-muted);text-align:right;white-space:nowrap;">${fmtMontoK(valor)}</div>
+        <div style="font-size:13px;font-weight:600;text-align:right;white-space:nowrap;color:${pct >= 0 ? "var(--positive)" : "var(--negative)"};">
+          ${fmtPct(pct)}
+        </div>
+        <div style="font-size:11.5px;color:var(--ink-muted);text-align:right;white-space:nowrap;">
+          ${fmtMontoK(valor)}
+        </div>
       </div>
     `;
   }).join("");
@@ -525,7 +501,7 @@ function renderTendencias(payload, snap) {
   const kpis = [
     {
       label:"MAT / R12",
-      value:fmtR12Value(payload, snap),
+      value:fmtMonto(snap.kpis.mat_r12),
       delta:fmtPct(snap.kpis.yoy_mat_pct),
       deltaClass:deltaClass(snap.kpis.yoy_mat_pct)
     },
@@ -575,56 +551,29 @@ function renderTendencias(payload, snap) {
       </h2>
 
       <svg
-        viewBox="0 0 790 240"
+        viewBox="0 0 760 220"
         width="100%"
-        height="240"
+        height="220"
         aria-label="Evolución acumulada de ventas por año"
       >
-        ${[0.25,0.5,0.75,1].map((ratio) => {
-          const yGrid = 190 - (ratio * 155);
-          const val = max * ratio;
-          return `
-            <line x1="58" y1="${yGrid.toFixed(1)}" x2="730" y2="${yGrid.toFixed(1)}" stroke="#E4E5E0" stroke-dasharray="3 5"/>
-            <text x="4" y="${(yGrid+3).toFixed(1)}" class="wf-label">${fmtMonto(val)}</text>
-          `;
-        }).join("")}
-        <line x1="58" y1="190" x2="730" y2="190" stroke="#E4E5E0"/>
-        <text x="4" y="193" class="wf-label">C$0</text>
+        <line
+          x1="30"
+          y1="190"
+          x2="730"
+          y2="190"
+          stroke="#E4E5E0"
+        />
+
+        <line
+          x1="30"
+          y1="112"
+          x2="730"
+          y2="112"
+          stroke="#E4E5E0"
+          stroke-dasharray="3 5"
+        />
 
         ${lines}
-
-        ${(() => {
-  const finales = anios.map(a => {
-    const serie = multi[a] || [];
-    if (!serie.length) return null;
-    const i = serie.length - 1;
-    const valorFinal = Number(serie[i]);
-    if (!Number.isFinite(valorFinal) || valorFinal <= 0) return null;
-    const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
-    const py = 190 - ((valorFinal - min) / rango) * 155;
-    return { a, valorFinal, px, py };
-  }).filter(Boolean);
-
-  // Evita que los valores finales queden superpuestos, especialmente cuando
-  // dos años terminan con ventas muy cercanas (p.ej. FARMAMEDICA).
-  const ordenadas = [...finales].sort((a,b) => a.py - b.py);
-  const minGap = 15;
-  let ultimoY = -Infinity;
-  ordenadas.forEach(item => {
-    item.labelY = Math.max(item.py + 3, ultimoY + minGap);
-    item.labelY = Math.min(item.labelY, 214);
-    ultimoY = item.labelY;
-  });
-
-  return finales.map(item => `
-    <circle cx="${item.px.toFixed(1)}" cy="${item.py.toFixed(1)}" r="2.8" fill="${colors[item.a]}"/>
-    <text x="${Math.min(item.px + 9, 752).toFixed(1)}" y="${item.labelY.toFixed(1)}" class="wf-value" fill="${colors[item.a]}">${fmtMonto(item.valorFinal)}</text>
-  `).join("");
-})()}    ${Array.from({length:n}, (_,i) => {
-          const x = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
-          const mes = mesInicioSerie + i;
-          return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>`;
-        }).join("")}
       </svg>
 
       <div style="display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-muted);margin-top:4px;">
@@ -638,9 +587,7 @@ function renderTendencias(payload, snap) {
 
       <div class="panel-note">
         La comparación se realiza sobre meses equivalentes hasta la fecha
-        operativa disponible. Si el proveedor inició operaciones durante el año,
-        la trayectoria comienza en su primer mes con venta. Los valores al cierre
-        de cada trayectoria se muestran en Córdobas (C$).
+        operativa disponible.
       </div>
 
     </div>
@@ -655,7 +602,7 @@ function renderTendencias(payload, snap) {
         Momentum mensual
       </h2>
 
-      <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;width:100%;max-width:760px;padding:0 0 9px;border-bottom:1px solid var(--line-strong);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;">
+      <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;padding:0 0 9px;border-bottom:1px solid var(--line-strong);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;">
         <span>Mes</span>
         <span>Variación MoM</span>
         <span style="text-align:right;">%</span>
@@ -667,7 +614,8 @@ function renderTendencias(payload, snap) {
       </div>
 
       <div class="panel-note">
-        MoM compara cada mes contra el mes inmediatamente anterior. La primera observación no representa una variación comparable y se muestra como “—”.
+        MoM compara cada mes contra el mes inmediatamente anterior.
+        La primera observación no representa una variación comparable.
       </div>
 
     </div>
@@ -702,7 +650,7 @@ function renderDrillDownClientesPerdidos(detalle) {
   if (!detalle || detalle.length === 0) return "";
   return `
     <details style="margin-top:20px;">
-      <summary class="client-drill-summary">Ver clientes (${detalle.length})</summary>
+      <summary style="cursor:pointer;font-size:12.5px;color:var(--primary);font-weight:600;">Ver clientes (${detalle.length})</summary>
       <div style="margin-top:16px;max-height:420px;overflow-y:auto;border:1px solid var(--line);">
         <table class="exec-table" style="margin-top:0;">
           <thead><tr><th>Cliente</th><th>Venta período anterior</th><th>Impacto perdido</th><th>Segmento</th><th>Prioridad</th></tr></thead>
@@ -740,8 +688,8 @@ function renderClientes(payload, snap) {
     <h1 class="thesis">Segmentación ABC 70/20/10 y dinámica real de cartera</h1>
     <p class="dek">Clasificación de clientes según metodología ABC 70/20/10 de SUINSA.</p>
     ${kpiStrip([
-      {label:"Clientes activos", value:snap.kpis.clientes_activos, delta:fmtBaseClientes(snap)},
-      {label:"Churn", value:fmtChurnValue(snap.kpis.churn_pct), delta:snap.kpis.churn_pct === null ? "Sin base comparable" : `${snap.waterfall.n_perdidos} perdidos`, deltaClass:snap.kpis.churn_pct === null ? "" : "down"},
+      {label:"Clientes activos", value:snap.kpis.clientes_activos, delta:`${snap.kpis.clientes_activos_anterior} en periodo anterior`},
+      {label:"Churn", value:`${snap.kpis.churn_pct}%`, delta:`${snap.waterfall.n_perdidos} perdidos`, deltaClass:"down"},
     ])}
     ${renderExecSummary(snap.hallazgos["05"])}
     <div class="section">
@@ -776,7 +724,7 @@ function renderPlan(payload, snap) {
       <thead><tr><th>Acción</th><th>Origen</th><th>Responsable</th><th>Plazo</th><th>Prioridad</th></tr></thead>
       <tbody>
         ${recos.map(r => `<tr>
-          <td><b>${r.titulo}</b><br><span style="color:var(--ink-muted);font-size:12px;">${normalizarTextoEjecutivo(r.detalle)}</span></td>
+          <td><b>${r.titulo}</b><br><span style="color:var(--ink-muted);font-size:12px;">${r.detalle}</span></td>
           <td style="color:var(--ink-faint);font-size:12px;">Cap. ${r.capitulo_origen} — ${CAP_NOMBRE[r.capitulo_origen]||""}</td>
           <td>${r.dueno}</td><td>${r.plazo}</td>
           <td class="priority-${r.prioridad==='Alta'?'high':'media'}">${r.prioridad}</td>
@@ -792,7 +740,8 @@ const RENDERERS = {
 
 function render() {
   const payload = DATA[proveedorActual];
-  const snap = payload.snapshots[fechaActual];
+  const snapFuente = payload.snapshots[fechaActual];
+  const snap = normalizarSnapParaVista(snapFuente);
   const contenido = RENDERERS[capituloActual](payload, snap);
   document.getElementById("app").innerHTML = shell(payload, snap, contenido);
   bindShellEvents();
