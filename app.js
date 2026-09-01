@@ -35,16 +35,37 @@ async function cargarManifiestoProveedores() {
   return manifiesto.proveedores.map(p => ({ id: p.id, label: p.nombre_display }));
 }
 
-async function aplicarOverlayReciente(id, payload) {
-  // Overlay incremental: agrega el último cierre sin reescribir el JSON histórico.
-  // Esto permite actualizar la Fecha Operativa sin tocar snapshots ya validados.
+let OVERLAY_MANIFEST = null;
+
+async function cargarManifestOverlays() {
+  if (OVERLAY_MANIFEST) return OVERLAY_MANIFEST;
   try {
-    const res = await fetch(`data/overlays/${id}-2026-08-31.b64?v=${Date.now()}`);
+    const res = await fetch(`data/overlays/manifest.json?v=${Date.now()}`);
+    if (!res.ok) return null;
+    OVERLAY_MANIFEST = await res.json();
+    return OVERLAY_MANIFEST;
+  } catch (e) {
+    console.warn("No se pudo cargar manifest de overlays", e);
+    return null;
+  }
+}
+
+async function aplicarOverlayReciente(id, payload) {
+  // Busca dinámicamente el último cierre publicado para el proveedor.
+  // No contiene ninguna fecha mensual hardcodeada: septiembre, octubre,
+  // noviembre, etc. entran por el mismo mecanismo.
+  try {
+    const manifest = await cargarManifestOverlays();
+    const meta = manifest?.overlays?.[id];
+    if (!meta?.archivo) return payload;
+
+    const res = await fetch(`data/overlays/${meta.archivo}?v=${Date.now()}`);
     if (!res.ok) return payload;
     const b64 = (await res.text()).trim();
     const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
     const patch = JSON.parse(await new Response(stream).text());
+    const fecha = patch.fecha_operativa || meta.fecha;
 
     payload.fecha_max_datos = patch.fecha_max_datos || payload.fecha_max_datos;
     if (patch.serie_mensual_append) {
@@ -53,10 +74,12 @@ async function aplicarOverlayReciente(id, payload) {
         patch.serie_mensual_append
       ];
     }
-    payload.snapshots = {
-      ...(payload.snapshots || {}),
-      "2026-08-31": patch.snapshot
-    };
+    if (patch.snapshot) {
+      payload.snapshots = {
+        ...(payload.snapshots || {}),
+        [fecha]: patch.snapshot
+      };
+    }
   } catch (e) {
     console.warn("No se pudo aplicar overlay reciente para", id, e);
   }
