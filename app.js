@@ -35,13 +35,42 @@ async function cargarManifiestoProveedores() {
   return manifiesto.proveedores.map(p => ({ id: p.id, label: p.nombre_display }));
 }
 
+async function aplicarOverlayReciente(id, payload) {
+  // Overlay incremental: agrega el último cierre sin reescribir el JSON histórico.
+  // Esto permite actualizar la Fecha Operativa sin tocar snapshots ya validados.
+  try {
+    const res = await fetch(`data/overlays/${id}-2026-08-31.b64?v=${Date.now()}`);
+    if (!res.ok) return payload;
+    const b64 = (await res.text()).trim();
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+    const patch = JSON.parse(await new Response(stream).text());
+
+    payload.fecha_max_datos = patch.fecha_max_datos || payload.fecha_max_datos;
+    if (patch.serie_mensual_append) {
+      payload.serie_mensual = [
+        ...(payload.serie_mensual || []).filter(x => x.mes !== patch.serie_mensual_append.mes),
+        patch.serie_mensual_append
+      ];
+    }
+    payload.snapshots = {
+      ...(payload.snapshots || {}),
+      "2026-08-31": patch.snapshot
+    };
+  } catch (e) {
+    console.warn("No se pudo aplicar overlay reciente para", id, e);
+  }
+  return payload;
+}
+
 async function cargarProveedor(id) {
   if (DATA[id]) return DATA[id];
   // cache-busting: evita que el navegador sirva una copia vieja del JSON
   // cuando el archivo en disco ya se actualizó (python -m http.server no
   // envía cabeceras de caché).
   const res = await fetch(`data/${id}.json?v=${Date.now()}`);
-  DATA[id] = await res.json();
+  const payload = await res.json();
+  DATA[id] = await aplicarOverlayReciente(id, payload);
   return DATA[id];
 }
 
