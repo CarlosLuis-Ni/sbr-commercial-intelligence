@@ -615,49 +615,73 @@ function renderTendencias(payload, snap) {
   const anioOperativo = Number(fechaOperativa.slice(0,4));
   const mesOperativo = Number(fechaOperativa.slice(5,7));
 
-  const mensual = Array.isArray(payload?.serie_mensual)
-    ? payload.serie_mensual
-        .map(r => ({
-          mes: String(r?.mes || ""),
-          anio: Number(String(r?.mes || "").slice(0,4)),
-          mesNum: Number(String(r?.mes || "").slice(5,7)),
-          valor: Number(r?.valor) || 0
-        }))
-        .filter(r => r.anio >= ANIO_INICIO_TRAYECTORIA && r.anio <= anioOperativo && r.mesNum >= 1 && r.mesNum <= 12)
-        .sort((a,b) => a.mes.localeCompare(b.mes))
-    : [];
-
+  // La serie multianual es la fuente correcta para la trayectoria:
+  // contiene el acumulado YTD por año calculado por el motor comercial.
+  // No se reconstruye desde serie_mensual porque ese arreglo puede ser
+  // una ventana operativa y no representar toda la historia disponible.
+  const multianual = snap?.serie_multianual || payload?.serie_multianual || null;
   const series = {};
-  mensual.forEach(r => {
-    if (!series[r.anio]) series[r.anio] = [];
-    series[r.anio].push(r);
-  });
+
+  if (multianual && typeof multianual === "object") {
+    Object.entries(multianual).forEach(([anioRaw, valores]) => {
+      const anio = Number(anioRaw);
+      if (!Number.isFinite(anio) || anio < ANIO_INICIO_TRAYECTORIA || anio > anioOperativo) return;
+      if (!Array.isArray(valores)) return;
+
+      const puntos = valores
+        .map((valor, idx) => ({ mes:idx + 1, valor:Number(valor) }))
+        .filter(p =>
+          p.mes >= 1 &&
+          p.mes <= 12 &&
+          p.mes <= (anio === anioOperativo ? mesOperativo : 12) &&
+          Number.isFinite(p.valor) &&
+          p.valor >= 0
+        );
+
+      // Elimina únicamente el tramo inicial sin venta real.
+      // Los ceros posteriores sí se conservan como parte de la trayectoria.
+      const primerIndice = puntos.findIndex(p => p.valor > 0);
+      if (primerIndice >= 0) series[anio] = puntos.slice(primerIndice);
+    });
+  }
+
+  // Fallback para releases antiguos que no tengan serie_multianual.
+  if (!Object.keys(series).length && Array.isArray(payload?.serie_mensual)) {
+    payload.serie_mensual.forEach(r => {
+      const texto = String(r?.mes || "");
+      const anio = Number(texto.slice(0,4));
+      const mes = Number(texto.slice(5,7));
+      const valor = Number(r?.valor);
+      if (
+        anio >= ANIO_INICIO_TRAYECTORIA &&
+        anio <= anioOperativo &&
+        mes >= 1 && mes <= 12 &&
+        (anio < anioOperativo || mes <= mesOperativo) &&
+        Number.isFinite(valor)
+      ) {
+        if (!series[anio]) series[anio] = [];
+        series[anio].push({mes, valor});
+      }
+    });
+
+    Object.keys(series).forEach(anio => {
+      series[anio].sort((a,b) => a.mes - b.mes);
+      let acumulado = 0;
+      series[anio] = series[anio].map(p => {
+        acumulado += p.valor;
+        return {mes:p.mes, valor:acumulado};
+      });
+    });
+  }
 
   const anios = Object.keys(series)
     .map(Number)
     .filter(a => a >= ANIO_INICIO_TRAYECTORIA && a <= anioOperativo)
     .sort((a,b) => a-b);
 
-  // Para el año operativo solo mostramos hasta el mes de la fecha operativa.
-  // Para años anteriores usamos los meses disponibles hasta ese mismo mes,
-  // manteniendo la comparación interanual equivalente.
-  const trayectorias = {};
-  anios.forEach(anio => {
-    let acumulado = 0;
-    const filas = (series[anio] || [])
-      .filter(r => anio < anioOperativo || r.mesNum <= mesOperativo)
-      .sort((a,b) => a.mesNum - b.mesNum);
-
-    filas.forEach(r => {
-      acumulado += r.valor;
-      trayectorias[anio] = trayectorias[anio] || [];
-      trayectorias[anio].push({ mes:r.mesNum, valor:acumulado });
-    });
-  });
-
-  // Solo años con al menos una observación real.
+  const trayectorias = series;
   const aniosVisibles = anios.filter(a => (trayectorias[a] || []).length > 0);
-  const allVals = aniosVisibles.flatMap(a => (trayectorias[a] || []).map(p => p.valor));
+    const allVals = aniosVisibles.flatMap(a => (trayectorias[a] || []).map(p => p.valor));
   const min = 0;
   const max = allVals.length ? Math.max(...allVals) : 1;
   const rango = Math.max(max - min, 1);
@@ -822,21 +846,30 @@ function renderTendencias(payload, snap) {
             return { anio, valorFinal:ultimo.valor, px, py };
           }).filter(Boolean);
 
+          // Columna fija de etiquetas a la derecha: evita que los valores
+          // se monten entre sí aunque las líneas terminen muy próximas.
+          const LABEL_X = 738;
+          const LABEL_MIN_Y = 38;
+          const LABEL_MAX_Y = 178;
+          const LABEL_GAP = 17;
           const ordenadas = [...finales].sort((a,b) => a.py - b.py);
-          const minGap = 15;
-          let ultimoY = -Infinity;
+          let ultimoY = LABEL_MIN_Y - LABEL_GAP;
           ordenadas.forEach(item => {
-            item.labelY = Math.max(item.py + 3, ultimoY + minGap);
-            item.labelY = Math.min(item.labelY, 214);
+            item.labelY = Math.max(item.py, ultimoY + LABEL_GAP);
             ultimoY = item.labelY;
           });
+          if (ordenadas.length) {
+            const exceso = ordenadas[ordenadas.length - 1].labelY - LABEL_MAX_Y;
+            if (exceso > 0) ordenadas.forEach(item => { item.labelY -= exceso; });
+          }
 
-          return finales.map(item => `
-            <circle cx="${item.px.toFixed(1)}" cy="${item.py.toFixed(1)}" r="2.8" fill="${colors[item.anio]}"/>
-            <text x="${Math.min(item.px + 9, 752).toFixed(1)}" y="${item.labelY.toFixed(1)}" class="wf-value" fill="${colors[item.anio]}">${fmtMonto(item.valorFinal)}</text>
-          `).join("");
+          return finales.map(item => {
+            const y = item.labelY;
+            return `<line x1="${item.px.toFixed(1)}" y1="${item.py.toFixed(1)}" x2="${LABEL_X-5}" y2="${y.toFixed(1)}" stroke="#C9CBC4" stroke-width="1"/>
+              <circle cx="${item.px.toFixed(1)}" cy="${item.py.toFixed(1)}" r="2.8" fill="${colors[item.anio]}"/>
+              <text x="${LABEL_X}" y="${(y+3).toFixed(1)}" class="wf-value" fill="${colors[item.anio]}" text-anchor="start">${fmtMonto(item.valorFinal)} · ${item.anio}</text>`;
+          }).join("");
         })()}
-
         ${mesesEje.map(m => {
           const x = xPosMes(m);
           return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[m].slice(0,3)}</text>`;
