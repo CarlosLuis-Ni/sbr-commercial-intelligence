@@ -9,6 +9,19 @@ async function getJson(url:string,headers:Record<string,string>){const r=await f
 async function listReleaseDates(){const r=await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`,{method:"POST",headers:{apikey:SERVICE_KEY,Authorization:`Bearer ${SERVICE_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({prefix:"releases/",limit:1000,sortBy:{column:"name",order:"desc"}})});const raw=await r.text();if(!r.ok)return [];let rows:any[]=[];try{rows=JSON.parse(raw)}catch{return []}return [...new Set(rows.map(x=>String(x.name||"").match(/^(\d{4}-\d{2}-\d{2})(?:\/|$)/)?.[1]).values())].filter(Boolean).sort().reverse();}
 async function latestRelease(){const dates=await listReleaseDates();return dates[0]||null;}
 async function downloadPrivate(path:string){const encoded=path.split("/").map(encodeURIComponent).join("/");const r=await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${encoded}`,{headers:{apikey:SERVICE_KEY,Authorization:`Bearer ${SERVICE_KEY}`}});if(!r.ok){console.error("SBR_STORAGE_ERROR",path,r.status,await r.text());return null}return await r.text();}
+async function downloadMasterSeries(providerId:string){
+  if(!/^[a-z0-9-]+$/.test(providerId)) return [];
+  try{
+    const url="https://raw.githubusercontent.com/CarlosLuis-Ni/sbr-commercial-intelligence/master/data/"+providerId+".json";
+    const r=await fetch(url,{headers:{"Accept":"application/json"}});
+    if(!r.ok){console.error("SBR_MASTER_DATA_ERROR",providerId,r.status);return []}
+    const master:any=await r.json();
+    return Array.isArray(master?.serie_mensual) ? master.serie_mensual : [];
+  }catch(e){
+    console.error("SBR_MASTER_DATA_FETCH_ERROR",providerId,e);
+    return [];
+  }
+}
 Deno.serve(async(req)=>{
   if(req.method==="OPTIONS") return new Response(null,{status:200,headers:cors});
   if(req.method!=="POST") return json({error:"SBR_METHOD_NOT_ALLOWED"},405);
@@ -40,8 +53,9 @@ Deno.serve(async(req)=>{
       const pt=await downloadPrivate(`releases/${release}/${providerId}.json`);if(pt===null)return json({error:"SBR_PROVIDER_STORAGE_ERROR"},500);
       let payload:any;try{payload=JSON.parse(pt)}catch(e){console.error("SBR_PROVIDER_JSON_ERROR",providerId,e);return json({error:"SBR_DATA_JSON_INVALID"},500)}
       if(!payload||typeof payload!=="object"||!payload.snapshots||typeof payload.snapshots!=="object")return json({error:"SBR_DATA_INVALID"},500);
-      if(esProveedor){const dates=Object.keys(payload.snapshots).sort(),latest=dates[dates.length-1];return json({...payload,snapshots:latest?{[latest]:payload.snapshots[latest]}:{},origen:"supabase_storage_private",rol:perfil.rol})}
-      return json({...payload,origen:"supabase_storage_private",rol:perfil.rol});
+      const serie_mensual_maestro = await downloadMasterSeries(providerId);
+      if(esProveedor){const dates=Object.keys(payload.snapshots).sort(),latest=dates[dates.length-1];return json({...payload,serie_mensual_maestro,snapshots:latest?{[latest]:payload.snapshots[latest]}:{},origen:"supabase_storage_private",rol:perfil.rol})}
+      return json({...payload,serie_mensual_maestro,origen:"supabase_storage_private",rol:perfil.rol});
     }
     return json({error:"SBR_ACTION_INVALID"},400);
   }catch(e){console.error("SBR_DATA_UNHANDLED",e);return json({error:e instanceof Error?e.message:"SBR_INTERNAL_ERROR"},500)}
