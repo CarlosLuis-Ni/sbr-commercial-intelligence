@@ -660,28 +660,8 @@ function renderTendencias(payload, snap) {
       });
   });
 
-  // Fallback SOLO para años sin venta mensual disponible.
-  const multianual = snap?.serie_multianual || payload?.serie_multianual || null;
-  if (multianual && typeof multianual === "object") {
-    Object.entries(multianual).forEach(([anioRaw, valores]) => {
-      const anio = Number(anioRaw);
-      if (
-        !Number.isFinite(anio) ||
-        anio < ANIO_INICIO_TRAYECTORIA ||
-        anio > anioOperativo ||
-        series[anio] ||
-        !Array.isArray(valores)
-      ) return;
-
-      const puntos = valores
-        .slice(0, Math.min(12, mesOperativo))
-        .map((valor, idx) => ({mes:idx + 1, valor:Number(valor)}))
-        .filter(p => Number.isFinite(p.valor) && p.valor >= 0);
-
-      const primero = puntos.findIndex(p => p.valor > 0);
-      if (primero >= 0) series[anio] = puntos.slice(primero);
-    });
-  }
+  // No existe fallback multianual: los años visibles deben tener venta mensual real.
+  // Esto evita fabricar historia para proveedores nuevos.
 
   const anios = Object.keys(series)
     .map(Number)
