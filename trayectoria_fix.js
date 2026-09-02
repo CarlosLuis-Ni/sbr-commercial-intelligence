@@ -12,62 +12,57 @@
     const fecha = String(snap?.fecha_operativa || "");
     const anioOp = Number(fecha.slice(0,4));
     const mesOp = Number(fecha.slice(5,7));
-
-    // Fuente de verdad para la trayectoria: serie_mensual.
-    // La serie_multianual de snapshots puede quedar incompleta en releases
-    // históricos/overlays; reconstruimos aquí el acumulado desde la venta
-    // mensual real para evitar perder enero-junio de años anteriores.
     const mensual = Array.isArray(payload?.serie_mensual) ? payload.serie_mensual : [];
+    const multianual = snap?.serie_multianual || payload?.serie_multianual || {};
+    const series = {};
+    const porAnioMensual = {};
 
-    if (mensual.length) {
-      const porAnio = {};
-      mensual.forEach(r => {
-        const txt = String(r?.mes || "");
-        const anio = Number(txt.slice(0,4));
-        const mes = Number(txt.slice(5,7));
-        const valor = Number(r?.valor);
-        if (!Number.isFinite(anio) || !Number.isFinite(mes) || !Number.isFinite(valor)) return;
-        if (anio < ANIO_INICIO || anio > anioOp || mes < 1 || mes > 12) return;
-        // Comparación interanual sobre meses equivalentes:
-        // todos los años se cortan al mismo mes operativo.
-        if (mes > mesOp) return;
-        if (!porAnio[anio]) porAnio[anio] = [];
-        porAnio[anio].push({mes, valor});
-      });
+    mensual.forEach(r => {
+      const txt = String(r?.mes || "");
+      const anio = Number(txt.slice(0,4));
+      const mes = Number(txt.slice(5,7));
+      const valor = Number(r?.valor);
+      if (!Number.isFinite(anio) || !Number.isFinite(mes) || !Number.isFinite(valor)) return;
+      if (anio < ANIO_INICIO || anio > anioOp || mes < 1 || mes > 12 || mes > mesOp) return;
+      if (!porAnioMensual[anio]) porAnioMensual[anio] = [];
+      porAnioMensual[anio].push({mes, valor});
+    });
 
-      const series = {};
-      Object.keys(porAnio).forEach(a => {
-        const filas = porAnio[a].sort((x,y) => x.mes-y.mes);
-        let acumulado = 0;
-        const puntos = filas.map(p => ({mes:p.mes, valor:(acumulado += p.valor)}));
-        const primero = puntos.findIndex(p => p.valor > 0);
-        if (primero >= 0) series[a] = puntos.slice(primero);
-      });
-      return series;
-    }
+    const reconstruir = filas => {
+      const ordenadas = [...filas].sort((a,b) => a.mes-b.mes);
+      let acumulado = 0;
+      const puntos = ordenadas.map(p => ({mes:p.mes, valor:(acumulado += p.valor)}));
+      const primero = puntos.findIndex(p => p.valor > 0);
+      return primero >= 0 ? puntos.slice(primero) : [];
+    };
 
-    // Fallback: si un payload antiguo no tiene serie_mensual, usamos
-    // la serie multianual ya calculada por el motor comercial.
-    const multianual = snap?.serie_multianual;
-    if (multianual && typeof multianual === "object") {
-      const series = {};
-      Object.entries(multianual).forEach(([anioTxt, valores]) => {
-        const anio = Number(anioTxt);
-        if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp) return;
-        if (!Array.isArray(valores)) return;
-        const limite = anio === anioOp ? Math.min(mesOp, valores.length) : Math.min(12, valores.length);
-        const puntos = [];
-        for (let mes = 1; mes <= limite; mes++) {
-          const valor = Number(valores[mes - 1]);
-          if (Number.isFinite(valor)) puntos.push({mes, valor});
-        }
+    // Preferir el acumulado multianual del motor cuando viene completo.
+    Object.entries(multianual || {}).forEach(([anioTxt, valores]) => {
+      const anio = Number(anioTxt);
+      if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp || !Array.isArray(valores)) return;
+      const limite = anio === anioOp ? Math.min(mesOp, valores.length) : Math.min(12, valores.length);
+      const puntos = [];
+      for (let mes=1; mes<=limite; mes++) {
+        const valor = Number(valores[mes-1]);
+        if (Number.isFinite(valor) && valor >= 0) puntos.push({mes, valor});
+      }
+      if (puntos.length >= Math.min(3, limite)) {
         const primero = puntos.findIndex(p => p.valor > 0);
         if (primero >= 0) series[anio] = puntos.slice(primero);
-      });
-      return series;
-    }
+      }
+    });
 
-    return {};
+    // Si un año histórico no está completo en multianual, reconstruirlo
+    // desde las ventas mensuales reales disponibles en el payload.
+    Object.entries(porAnioMensual).forEach(([anioTxt, filas]) => {
+      const anio = Number(anioTxt);
+      if (!series[anio] || series[anio].length < 3) {
+        const reconstruida = reconstruir(filas);
+        if (reconstruida.length) series[anio] = reconstruida;
+      }
+    });
+
+    return series;
   }
 
   function colores(anios) {
@@ -195,7 +190,7 @@
       '<div class="section"><div class="section-kicker">¿Cómo evoluciona la venta acumulada?</div><h2 class="section-title">Trayectoria acumulada por año</h2>' +
       '<div class="trajectory-chart-wrap">' + generarSvg(series,anios,max,ultimoMes,false) + generarSvg(series,anios,max,ultimoMes,true) + '</div>' +
       '<div class="trajectory-legend">' + anios.map(a => '<span><span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:' + colores(anios)[a] + ';vertical-align:middle;"></span>' + a + '</span>').join("") + '</div>' +
-      '<div class="panel-note">La comparación se realiza sobre meses equivalentes hasta la fecha operativa disponible. La trayectoria utiliza la serie multianual acumulada calculada por el motor comercial. Si el proveedor inició operaciones durante el año, la trayectoria comienza en su primer mes con venta. La visualización inicia en 2023. Los valores al cierre se muestran en Córdobas (C$).</div></div>' +
+      '<div class="panel-note">La comparación se realiza sobre meses equivalentes hasta la fecha operativa disponible. La trayectoria utiliza el acumulado multianual del motor comercial y reconstruye desde la venta mensual cuando un año histórico viene incompleto. Si el proveedor inició operaciones durante el año, la trayectoria comienza en su primer mes con venta. La visualización inicia en 2023. Los valores al cierre se muestran en Córdobas (C$).</div></div>' +
       '<div class="section"><div class="section-kicker">¿Está acelerando o desacelerando?</div><h2 class="section-title">Momentum mensual</h2>' +
       '<div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;width:100%;max-width:760px;padding:0 0 9px;border-bottom:1px solid var(--line-strong);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;"><span>Mes</span><span>Variación MoM</span><span style="text-align:right;">%</span><span style="text-align:right;">Venta</span></div>' +
       '<div style="width:100%;max-width:760px;">' + momentumRows + '</div><div class="panel-note">MoM compara cada mes contra el mes inmediatamente anterior. La primera observación no representa una variación comparable y se muestra como “—”.</div></div>' +
@@ -222,7 +217,7 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-multianual-gutter-v3";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v4";
     return true;
   }
 
