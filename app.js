@@ -597,63 +597,112 @@ function renderTendencias(payload, snap) {
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
   ];
 
-  const multi = snap.serie_multianual || {};
-
-  // Gobierno de la gráfica ejecutiva:
-  // 2022 se conserva en los datos históricos, pero la trayectoria visible
-  // comienza en 2023 para mantener una comparación ejecutiva consistente.
+  /*
+   * Trayectoria acumulada — fuente única: serie_mensual.
+   * No usamos serie_multianual porque puede contener series históricas
+   * recortadas por el motor de generación. Reconstruimos aquí el YTD
+   * acumulado por año a partir de las ventas mensuales reales.
+   *
+   * Regla:
+   * - La trayectoria visible comienza en 2023.
+   * - Cada año se acumula desde su primer mes con dato real.
+   * - Si el proveedor inició operaciones durante el año (p.ej. INFARMA
+   *   en abril de 2026), el eje comienza en ese mes.
+   * - No se inventan ceros ni meses inexistentes.
+   */
   const ANIO_INICIO_TRAYECTORIA = 2023;
-  const anios = Object.keys(multi)
-    .filter(a => Number(a) >= ANIO_INICIO_TRAYECTORIA)
-    .sort((a,b) => Number(a) - Number(b));
+  const fechaOperativa = String(snap.fecha_operativa || "");
+  const anioOperativo = Number(fechaOperativa.slice(0,4));
+  const mesOperativo = Number(fechaOperativa.slice(5,7));
 
-  const allVals = anios.flatMap(a => (multi[a] || []).filter(v => Number.isFinite(Number(v))));
+  const mensual = Array.isArray(payload?.serie_mensual)
+    ? payload.serie_mensual
+        .map(r => ({
+          mes: String(r?.mes || ""),
+          anio: Number(String(r?.mes || "").slice(0,4)),
+          mesNum: Number(String(r?.mes || "").slice(5,7)),
+          valor: Number(r?.valor) || 0
+        }))
+        .filter(r => r.anio >= ANIO_INICIO_TRAYECTORIA && r.anio <= anioOperativo && r.mesNum >= 1 && r.mesNum <= 12)
+        .sort((a,b) => a.mes.localeCompare(b.mes))
+    : [];
+
+  const series = {};
+  mensual.forEach(r => {
+    if (!series[r.anio]) series[r.anio] = [];
+    series[r.anio].push(r);
+  });
+
+  const anios = Object.keys(series)
+    .map(Number)
+    .filter(a => a >= ANIO_INICIO_TRAYECTORIA && a <= anioOperativo)
+    .sort((a,b) => a-b);
+
+  // Para el año operativo solo mostramos hasta el mes de la fecha operativa.
+  // Para años anteriores usamos los meses disponibles hasta ese mismo mes,
+  // manteniendo la comparación interanual equivalente.
+  const trayectorias = {};
+  anios.forEach(anio => {
+    let acumulado = 0;
+    const filas = (series[anio] || [])
+      .filter(r => anio < anioOperativo || r.mesNum <= mesOperativo)
+      .sort((a,b) => a.mesNum - b.mesNum);
+
+    filas.forEach(r => {
+      acumulado += r.valor;
+      trayectorias[anio] = trayectorias[anio] || [];
+      trayectorias[anio].push({ mes:r.mesNum, valor:acumulado });
+    });
+  });
+
+  // Solo años con al menos una observación real.
+  const aniosVisibles = anios.filter(a => (trayectorias[a] || []).length > 0);
+  const allVals = aniosVisibles.flatMap(a => (trayectorias[a] || []).map(p => p.valor));
   const min = 0;
   const max = allVals.length ? Math.max(...allVals) : 1;
   const rango = Math.max(max - min, 1);
 
   const colors = {};
-  anios.forEach((a, i) => {
-    if (i === anios.length - 1) colors[a] = "#1C3D5A";
-    else if (i === anios.length - 2) colors[a] = "#4C6C87";
+  aniosVisibles.forEach((a, i) => {
+    if (i === aniosVisibles.length - 1) colors[a] = "#1C3D5A";
+    else if (i === aniosVisibles.length - 2) colors[a] = "#4C6C87";
     else colors[a] = "#A9B0B5";
   });
 
-  const n = Math.max(...anios.map(a => (multi[a] || []).length), 1);
-
-  // Área útil del gráfico: coincide con la cuadrícula (x=58..730).
-  // Evita que el primer punto/mes quede desplazado hacia el margen y
-  // que las etiquetas iniciales parezcan cortadas.
-  const X_INICIO = 58;
-  const X_FIN = 730;
-  const xPos = i => n === 1
-    ? (X_INICIO + X_FIN) / 2
-    : X_INICIO + (i * ((X_FIN - X_INICIO) / (n - 1)));
-
-  // Cuando un proveedor inicia operaciones durante el año, la serie puede
-  // comenzar en un mes distinto de enero. INFARMA, por ejemplo, inició en abril.
-  // El eje X debe respetar ese mes de inicio para no presentar abril como enero.
-  const mesInicioSerie = (() => {
-    if (anios.length !== 1 || !Array.isArray(payload?.serie_mensual) || !payload.serie_mensual.length) return 1;
-    const primerMes = String(payload.serie_mensual[0]?.mes || "").split("-")[1];
-    const mes = Number(primerMes);
-    return Number.isFinite(mes) && mes >= 1 && mes <= 12 ? mes : 1;
+  /*
+   * Si existe historia completa desde enero, el eje empieza en enero.
+   * Si el proveedor inició operaciones durante el año y solo existe una
+   * trayectoria (INFARMA), el eje comienza en su primer mes real.
+   */
+  const primerMesGlobal = (() => {
+    const primeros = aniosVisibles
+      .map(a => (trayectorias[a] || [])[0]?.mes)
+      .filter(Number.isFinite);
+    return (aniosVisibles.length === 1 && primeros.length) ? Math.min(...primeros) : 1;
   })();
 
-  const lines = anios.map(a => {
-    const serie = multi[a] || [];
-    if (!serie.length) return "";
+  const ultimoMesGlobal = Math.max(
+    primerMesGlobal,
+    Math.min(12, mesOperativo || 12)
+  );
 
-    // Los ceros iniciales de años históricos representan ausencia de dato,
-    // no ventas reales. Se omiten para evitar una trayectoria engañosa.
-    const primerDato = serie.findIndex(v => Number(v) > 0);
-    const inicio = primerDato >= 0 ? primerDato : 0;
-    const puntosValidos = serie.map((v,i) => ({v:Number(v),i})).filter(p => p.i >= inicio && Number.isFinite(p.v) && p.v > 0);
-    if (puntosValidos.length < 2) return "";
+  const mesesEje = [];
+  for (let m = primerMesGlobal; m <= ultimoMesGlobal; m++) mesesEje.push(m);
 
-    const pts = puntosValidos.map(({v,i}) => {
-      const px = xPos(i);
-      const py = 190 - ((v - min) / rango) * 155;
+  const X_INICIO = 58;
+  const X_FIN = 730;
+  const n = Math.max(mesesEje.length, 1);
+  const xPosMes = mes => n === 1
+    ? (X_INICIO + X_FIN) / 2
+    : X_INICIO + ((mes - primerMesGlobal) * ((X_FIN - X_INICIO) / (n - 1)));
+
+  const lines = aniosVisibles.map(anio => {
+    const serie = trayectorias[anio] || [];
+    if (serie.length < 1) return "";
+
+    const pts = serie.map(p => {
+      const px = xPosMes(p.mes);
+      const py = 190 - ((p.valor - min) / rango) * 155;
       return `${px.toFixed(1)},${py.toFixed(1)}`;
     }).join(" ");
 
@@ -661,8 +710,8 @@ function renderTendencias(payload, snap) {
       <polyline
         points="${pts}"
         fill="none"
-        stroke="${colors[a]}"
-        stroke-width="${a === anios[anios.length - 1] ? 2.8 : 1.6}"
+        stroke="${colors[anio]}"
+        stroke-width="${anio === aniosVisibles[aniosVisibles.length - 1] ? 2.8 : 1.6}"
         stroke-linejoin="round"
         stroke-linecap="round"
       />
@@ -694,7 +743,6 @@ function renderTendencias(payload, snap) {
   }).join("");
 
   const qoq = snap.qoq;
-
   const kpis = [
     {
       label:"MAT / R12",
@@ -714,9 +762,7 @@ function renderTendencias(payload, snap) {
     kpis.push({
       label:`QoQ (${qoq.trimestre_actual} vs. ${qoq.trimestre_anterior})`,
       value:fmtPct(qoq.qoq_pct),
-      delta:qoq.trimestre_actual_completo
-        ? "Trimestre completo"
-        : "Último trimestre completo",
+      delta:qoq.trimestre_actual_completo ? "Trimestre completo" : "Último trimestre completo",
       deltaClass:deltaClass(qoq.qoq_pct)
     });
   }
@@ -767,52 +813,49 @@ function renderTendencias(payload, snap) {
         ${lines}
 
         ${(() => {
-  const finales = anios.map(a => {
-    const serie = multi[a] || [];
-    if (!serie.length) return null;
-    const i = serie.length - 1;
-    const valorFinal = Number(serie[i]);
-    if (!Number.isFinite(valorFinal) || valorFinal <= 0) return null;
-    const px = xPos(i);
-    const py = 190 - ((valorFinal - min) / rango) * 155;
-    return { a, valorFinal, px, py };
-  }).filter(Boolean);
+          const finales = aniosVisibles.map(anio => {
+            const serie = trayectorias[anio] || [];
+            if (!serie.length) return null;
+            const ultimo = serie[serie.length - 1];
+            const px = xPosMes(ultimo.mes);
+            const py = 190 - ((ultimo.valor - min) / rango) * 155;
+            return { anio, valorFinal:ultimo.valor, px, py };
+          }).filter(Boolean);
 
-  // Evita que los valores finales queden superpuestos, especialmente cuando
-  // dos años terminan con ventas muy cercanas (p.ej. FARMAMEDICA).
-  const ordenadas = [...finales].sort((a,b) => a.py - b.py);
-  const minGap = 15;
-  let ultimoY = -Infinity;
-  ordenadas.forEach(item => {
-    item.labelY = Math.max(item.py + 3, ultimoY + minGap);
-    item.labelY = Math.min(item.labelY, 214);
-    ultimoY = item.labelY;
-  });
+          const ordenadas = [...finales].sort((a,b) => a.py - b.py);
+          const minGap = 15;
+          let ultimoY = -Infinity;
+          ordenadas.forEach(item => {
+            item.labelY = Math.max(item.py + 3, ultimoY + minGap);
+            item.labelY = Math.min(item.labelY, 214);
+            ultimoY = item.labelY;
+          });
 
-  return finales.map(item => `
-    <circle cx="${item.px.toFixed(1)}" cy="${item.py.toFixed(1)}" r="2.8" fill="${colors[item.a]}"/>
-    <text x="${Math.min(item.px + 9, 752).toFixed(1)}" y="${item.labelY.toFixed(1)}" class="wf-value" fill="${colors[item.a]}">${fmtMonto(item.valorFinal)}</text>
-  `).join("");
-})()}    ${Array.from({length:n}, (_,i) => {
-          const x = xPos(i);
-          const mes = mesInicioSerie + i;
-          return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>`;
+          return finales.map(item => `
+            <circle cx="${item.px.toFixed(1)}" cy="${item.py.toFixed(1)}" r="2.8" fill="${colors[item.anio]}"/>
+            <text x="${Math.min(item.px + 9, 752).toFixed(1)}" y="${item.labelY.toFixed(1)}" class="wf-value" fill="${colors[item.anio]}">${fmtMonto(item.valorFinal)}</text>
+          `).join("");
+        })()}
+
+        ${mesesEje.map(m => {
+          const x = xPosMes(m);
+          return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[m].slice(0,3)}</text>`;
         }).join("")}
       </svg>
 
       <div style="display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-muted);margin-top:4px;">
-        ${anios.map(a => `
+        ${aniosVisibles.map(anio => `
           <span>
-            <span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:${colors[a]};vertical-align:middle;"></span>
-            ${a}
+            <span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:${colors[anio]};vertical-align:middle;"></span>
+            ${anio}
           </span>
         `).join("")}
       </div>
 
       <div class="panel-note">
-        La comparación se realiza sobre meses equivalentes hasta la fecha
-        operativa disponible. Si el proveedor inició operaciones durante el año,
-        la trayectoria comienza en su primer mes con venta. Los valores al cierre
+        La comparación se realiza sobre meses equivalentes hasta la fecha operativa disponible.
+        La trayectoria se reconstruye desde la venta mensual real. Si el proveedor inició operaciones
+        durante el año, la trayectoria comienza en su primer mes con venta. Los valores al cierre
         de cada trayectoria se muestran en Córdobas (C$).
       </div>
 
@@ -850,7 +893,6 @@ function renderTendencias(payload, snap) {
     ${renderRecomendacionesCapitulo(snap.recomendaciones, "03")}
   `;
 }
-
 function renderPortafolio(payload, snap) {
   return `
     <div class="kicker">Capítulo 04 — Portafolio</div>
