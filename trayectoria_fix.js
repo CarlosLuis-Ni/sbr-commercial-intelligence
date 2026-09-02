@@ -193,7 +193,7 @@
       ".trajectory-grid-label,.trajectory-axis{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:10px;fill:#6B7178;}" +
       ".trajectory-legend{display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-muted);margin-top:8px;}" +
       "@media (max-width:760px){.trajectory-desktop{display:none!important}.trajectory-mobile{display:block!important}.trajectory-value{font-size:11.5px}.trajectory-grid-label{font-size:9px}.trajectory-axis{font-size:10px}.trajectory-legend{gap:10px 16px;margin-top:7px}}" +
-      "@media (max-width:430px){.trajectory-value{font-size:11.5px}.trajectory-chart-wrap{margin-left:0;margin-right:0}}";
+      "@media (max-width:430px){.trajectory-value{font-size:10.5px}.trajectory-chart-wrap{margin-left:0;margin-right:0}}"
     document.head.appendChild(style);
   }
 
