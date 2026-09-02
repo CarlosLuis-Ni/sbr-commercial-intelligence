@@ -28,9 +28,9 @@
         const valor = Number(r?.valor);
         if (!Number.isFinite(anio) || !Number.isFinite(mes) || !Number.isFinite(valor)) return;
         if (anio < ANIO_INICIO || anio > anioOp || mes < 1 || mes > 12) return;
-        // Para años históricos usamos todos los meses disponibles.
-        // Solo el año operativo se limita al mes de corte.
-        if (anio === anioOp && mes > mesOp) return;
+        // Comparación interanual sobre meses equivalentes:
+        // todos los años se cortan al mismo mes operativo.
+        if (mes > mesOp) return;
         if (!porAnio[anio]) porAnio[anio] = [];
         porAnio[anio].push({mes, valor});
       });
