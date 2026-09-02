@@ -19,14 +19,22 @@
     // proveedores nuevos (INFARMA, por ejemplo).
     const base = window.__SBR_HISTORICO_BASE || [];
     const porMes = new Map();
-    mensual.forEach(r => {
-      const mes = String(r?.mes || "");
-      if (mes) porMes.set(mes, r); // release tiene prioridad
-    });
+
+    // HISTÓRICO CERRADO: el JSON maestro es la fuente autoritativa.
+    // El release de Supabase puede contener una ventana histórica parcial
+    // o valores recortados; no debe sobrescribir meses históricos reales.
     base.forEach(r => {
       const mes = String(r?.mes || "");
       const anio = Number(mes.slice(0,4));
-      if (mes && anio < anioOp && !porMes.has(mes)) porMes.set(mes, r);
+      if (mes && Number.isFinite(anio) && anio < anioOp) porMes.set(mes, r);
+    });
+
+    // AÑO OPERATIVO: usar el release de producción para reflejar la fecha
+    // operativa disponible. Solo se aceptan meses hasta mesOp más adelante.
+    mensual.forEach(r => {
+      const mes = String(r?.mes || "");
+      const anio = Number(mes.slice(0,4));
+      if (mes && Number.isFinite(anio) && anio >= anioOp) porMes.set(mes, r);
     });
     const mensualCompleta = [...porMes.values()];
     const series = {};
@@ -221,7 +229,7 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v12";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v13";
     return true;
   }
 
