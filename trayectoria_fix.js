@@ -35,74 +35,59 @@
       return primero >= 0 ? puntos.slice(primero) : [];
     };
 
-    // IMPORTANTE: una release reciente puede traer la serie_multianual
-    // "alineada" a la ventana operativa: por ejemplo [0,0,0,0,0,0,Jul,Ago].
-    // Su longitud (8) parece mayor que la de un snapshot anterior (7), pero
-    // su cobertura histórica real es peor (solo 2 meses con acumulado).
-    //
-    // Por eso NO seleccionamos por longitud del arreglo. Para años históricos
-    // seleccionamos el snapshot con mayor cobertura real: cantidad de meses
-    // con acumulado positivo. En empate, gana el snapshot más reciente.
-    // Para el año operativo usamos exclusivamente su snapshot operativo.
+    // Historical trajectory source policy:
+    // - Use real monthly sales first for historical years.
+    // - Use multiyear snapshots only when monthly coverage is unavailable.
+    // - Preserve zero months in multiyear arrays; zeros are positional.
     const candidatosPorAnio = {};
-    const snapshots = payload?.snapshots && typeof payload.snapshots === "object"
-      ? payload.snapshots
-      : {};
-    const snapshotEntries = Object.entries(snapshots);
-    snapshotEntries.forEach(([fechaSnap, snapshot]) => {
+    const snapshots = payload?.snapshots && typeof payload.snapshots === "object" ? payload.snapshots : {};
+
+    Object.entries(snapshots).forEach(([fechaSnap, snapshot]) => {
       const multianual = snapshot?.serie_multianual;
       if (!multianual || typeof multianual !== "object") return;
+
       Object.entries(multianual).forEach(([anioTxt, valores]) => {
         const anio = Number(anioTxt);
         if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp || !Array.isArray(valores)) return;
         if (anio === anioOp && fechaSnap !== String(snap?.fecha_operativa || "")) return;
 
-        const usable = valores
-          .slice(0, Math.min(12, mesOp))
-          .map(Number)
-          .filter(v => Number.isFinite(v) && v >= 0);
+        const usable = valores.slice(0, Math.min(12, mesOp)).map(Number);
+        if (!usable.length || usable.some(v => !Number.isFinite(v) || v < 0)) return;
 
-        if (!usable.length) return;
-
-        const cobertura = usable.filter(v => v > 0).length;
         const ultimoPositivo = usable.reduce((acc, v, i) => v > 0 ? i : acc, -1);
+        if (ultimoPositivo < 0) return;
+
+        const cobertura = ultimoPositivo + 1;
         const actual = candidatosPorAnio[anio];
+        const mejor = anio === anioOp || !actual || cobertura > actual.cobertura || (cobertura === actual.cobertura && fechaSnap > actual.fecha);
 
-        const mejor =
-          anio === anioOp ||
-          !actual ||
-          cobertura > actual.cobertura ||
-          (cobertura === actual.cobertura && ultimoPositivo > actual.ultimoPositivo) ||
-          (cobertura === actual.cobertura && ultimoPositivo === actual.ultimoPositivo && fechaSnap > actual.fecha);
-
-        if (mejor) {
-          candidatosPorAnio[anio] = {
-            fecha: fechaSnap,
-            valores: usable,
-            cobertura,
-            ultimoPositivo
-          };
-        }
+        if (mejor) candidatosPorAnio[anio] = {fecha: fechaSnap, valores: usable.slice(0, cobertura), cobertura};
       });
     });
 
-    Object.entries(candidatosPorAnio).forEach(([anioTxt, candidato]) => {
-      const anio = Number(anioTxt);
-      const puntos = candidato.valores.map((valor, idx) => ({mes:idx + 1, valor}));
-      const primero = puntos.findIndex(p => p.valor > 0);
-      if (primero >= 0) series[anio] = puntos.slice(primero);
-    });
-
-    // Último fallback: reconstruir desde ventas mensuales cuando exista una
-    // serie mensual más completa que la candidata multianual seleccionada.
+    // Venta mensual real tiene prioridad para años históricos.
     Object.entries(porAnioMensual).forEach(([anioTxt, filas]) => {
       const anio = Number(anioTxt);
       const reconstruida = reconstruir(filas);
-      if (reconstruida.length && (!series[anio] || reconstruida.length > series[anio].length)) {
+      if (!reconstruida.length) return;
+
+      const coberturaMensual = reconstruida[reconstruida.length - 1].mes;
+      const coberturaActual = series[anio]?.[series[anio].length - 1]?.mes || 0;
+
+      if (anio !== anioOp || !series[anio] || coberturaMensual >= coberturaActual) {
         series[anio] = reconstruida;
       }
     });
 
+    // Fallback multianual solo si la venta mensual no pudo reconstruir el año.
+    Object.entries(candidatosPorAnio).forEach(([anioTxt, candidato]) => {
+      const anio = Number(anioTxt);
+      if (series[anio]?.length) return;
+
+      const puntos = candidato.valores.map((valor, idx) => ({mes:idx + 1, valor}));
+      const primero = puntos.findIndex(p => p.valor > 0);
+      if (primero >= 0) series[anio] = puntos.slice(primero);
+    });
     return series;
   }
 
