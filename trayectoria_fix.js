@@ -17,7 +17,7 @@
     // Completamos SOLO los meses que falten con el JSON maestro del MISMO
     // proveedor. Esto corrige históricos parciales sin inventar años para
     // proveedores nuevos (INFARMA, por ejemplo).
-    const base = window.__SBR_HISTORICO_BASE || [];
+    const base = Array.isArray(payload?.serie_mensual_maestro) && payload.serie_mensual_maestro.length ? payload.serie_mensual_maestro : (window.__SBR_HISTORICO_BASE || []);
     const porMes = new Map();
 
     // HISTÓRICO CERRADO: el JSON maestro es la fuente autoritativa.
@@ -229,7 +229,7 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v13";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v14";
     return true;
   }
 
