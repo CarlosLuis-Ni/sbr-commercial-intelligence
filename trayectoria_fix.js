@@ -13,6 +13,7 @@
     const anioOp = Number(fecha.slice(0,4));
     const mesOp = Number(fecha.slice(5,7));
     const mensual = Array.isArray(payload?.serie_mensual) ? payload.serie_mensual : [];
+    const mensualCompleta = mensual;
     const series = {};
     const porAnioMensual = {};
 
