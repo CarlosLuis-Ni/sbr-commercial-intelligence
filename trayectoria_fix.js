@@ -53,30 +53,14 @@
       Object.entries(multianual).forEach(([anioTxt, valores]) => {
         const anio = Number(anioTxt);
         if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp || !Array.isArray(valores)) return;
-        const usable = valores
-          .slice(0, Math.min(12, mesOp))
-          .map(Number)
-          .filter(v => Number.isFinite(v) && v >= 0);
+        if (anio === anioOp && fechaSnap !== String(snap?.fecha_operativa || "")) return;
+        const usable = valores.slice(0, Math.min(12, mesOp)).map(Number).filter(v => Number.isFinite(v) && v >= 0);
         if (!usable.length) return;
         const actual = candidatosPorAnio[anio];
-        if (!actual || usable.length > actual.valores.length || (usable.length === actual.valores.length && fechaSnap > actual.fecha)) {
+        if (anio === anioOp || !actual || usable.length > actual.valores.length || (usable.length === actual.valores.length && fechaSnap > actual.fecha)) {
           candidatosPorAnio[anio] = {fecha:fechaSnap, valores:usable};
         }
       });
-    });
-
-    // También considerar explícitamente el snapshot operativo seleccionado.
-    const multianualActual = snap?.serie_multianual || {};
-    Object.entries(multianualActual).forEach(([anioTxt, valores]) => {
-      const anio = Number(anioTxt);
-      if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp || !Array.isArray(valores)) return;
-      const usable = valores.slice(0, Math.min(12, mesOp)).map(Number).filter(v => Number.isFinite(v) && v >= 0);
-      if (!usable.length) return;
-      const actual = candidatosPorAnio[anio];
-      const fechaActualSnap = String(snap?.fecha_operativa || "");
-      if (!actual || usable.length > actual.valores.length || (usable.length === actual.valores.length && fechaActualSnap > actual.fecha)) {
-        candidatosPorAnio[anio] = {fecha:fechaActualSnap, valores:usable};
-      }
     });
 
     Object.entries(candidatosPorAnio).forEach(([anioTxt, candidato]) => {
@@ -251,7 +235,7 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v5";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v6";
     return true;
   }
 
