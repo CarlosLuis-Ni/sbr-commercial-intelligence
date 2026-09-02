@@ -13,7 +13,22 @@
     const anioOp = Number(fecha.slice(0,4));
     const mesOp = Number(fecha.slice(5,7));
     const mensual = Array.isArray(payload?.serie_mensual) ? payload.serie_mensual : [];
-    const mensualCompleta = mensual;
+    // El release de producción puede traer una ventana histórica parcial.
+    // Completamos SOLO los meses que falten con el JSON maestro del MISMO
+    // proveedor. Esto corrige históricos parciales sin inventar años para
+    // proveedores nuevos (INFARMA, por ejemplo).
+    const base = window.__SBR_HISTORICO_BASE || [];
+    const porMes = new Map();
+    mensual.forEach(r => {
+      const mes = String(r?.mes || "");
+      if (mes) porMes.set(mes, r); // release tiene prioridad
+    });
+    base.forEach(r => {
+      const mes = String(r?.mes || "");
+      const anio = Number(mes.slice(0,4));
+      if (mes && anio < anioOp && !porMes.has(mes)) porMes.set(mes, r);
+    });
+    const mensualCompleta = [...porMes.values()];
     const series = {};
     const porAnioMensual = {};
 
@@ -206,8 +221,22 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v10";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v11";
     return true;
+  }
+
+  async function cargarHistoricoBase() {
+    try {
+      const id = String(proveedorActual || "").trim().toLowerCase();
+      if (!id) return;
+      const res = await fetch("data/" + id + ".json?historical=" + Date.now(), {cache:"no-store"});
+      if (!res.ok) return;
+      const base = await res.json();
+      window.__SBR_HISTORICO_BASE = Array.isArray(base?.serie_mensual) ? base.serie_mensual : [];
+    } catch (e) {
+      window.__SBR_HISTORICO_BASE = [];
+      console.warn("SBR Tendencias: no se pudo cargar histórico maestro", e);
+    }
   }
 
   async function esperar() {
@@ -216,6 +245,7 @@
       setTimeout(esperar,100);
       return;
     }
+    await cargarHistoricoBase();
     render();
   }
   esperar();
