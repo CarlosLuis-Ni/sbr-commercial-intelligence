@@ -598,7 +598,14 @@ function renderTendencias(payload, snap) {
   ];
 
   const multi = snap.serie_multianual || {};
-  const anios = Object.keys(multi).filter(a => Number(a) >= 2023).sort((a,b) => Number(a) - Number(b));
+
+  // Gobierno de la gráfica ejecutiva:
+  // 2022 se conserva en los datos históricos, pero la trayectoria visible
+  // comienza en 2023 para mantener una comparación ejecutiva consistente.
+  const ANIO_INICIO_TRAYECTORIA = 2023;
+  const anios = Object.keys(multi)
+    .filter(a => Number(a) >= ANIO_INICIO_TRAYECTORIA)
+    .sort((a,b) => Number(a) - Number(b));
 
   const allVals = anios.flatMap(a => (multi[a] || []).filter(v => Number.isFinite(Number(v))));
   const min = 0;
@@ -613,6 +620,15 @@ function renderTendencias(payload, snap) {
   });
 
   const n = Math.max(...anios.map(a => (multi[a] || []).length), 1);
+
+  // Área útil del gráfico: coincide con la cuadrícula (x=58..730).
+  // Evita que el primer punto/mes quede desplazado hacia el margen y
+  // que las etiquetas iniciales parezcan cortadas.
+  const X_INICIO = 58;
+  const X_FIN = 730;
+  const xPos = i => n === 1
+    ? (X_INICIO + X_FIN) / 2
+    : X_INICIO + (i * ((X_FIN - X_INICIO) / (n - 1)));
 
   // Cuando un proveedor inicia operaciones durante el año, la serie puede
   // comenzar en un mes distinto de enero. INFARMA, por ejemplo, inició en abril.
@@ -636,7 +652,7 @@ function renderTendencias(payload, snap) {
     if (puntosValidos.length < 2) return "";
 
     const pts = puntosValidos.map(({v,i}) => {
-      const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
+      const px = xPos(i);
       const py = 190 - ((v - min) / rango) * 155;
       return `${px.toFixed(1)},${py.toFixed(1)}`;
     }).join(" ");
@@ -757,7 +773,7 @@ function renderTendencias(payload, snap) {
     const i = serie.length - 1;
     const valorFinal = Number(serie[i]);
     if (!Number.isFinite(valorFinal) || valorFinal <= 0) return null;
-    const px = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
+    const px = xPos(i);
     const py = 190 - ((valorFinal - min) / rango) * 155;
     return { a, valorFinal, px, py };
   }).filter(Boolean);
@@ -778,7 +794,7 @@ function renderTendencias(payload, snap) {
     <text x="${Math.min(item.px + 9, 752).toFixed(1)}" y="${item.labelY.toFixed(1)}" class="wf-value" fill="${colors[item.a]}">${fmtMonto(item.valorFinal)}</text>
   `).join("");
 })()}    ${Array.from({length:n}, (_,i) => {
-          const x = n === 1 ? 380 : 30 + (i * (700 / (n - 1)));
+          const x = xPos(i);
           const mes = mesInicioSerie + i;
           return `<text x="${x.toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes] ? MESES[mes].slice(0,3) : mes}</text>`;
         }).join("")}
