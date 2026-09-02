@@ -598,79 +598,88 @@ function renderTendencias(payload, snap) {
   ];
 
   /*
-   * Trayectoria acumulada — fuente única: serie_mensual.
-   * No usamos serie_multianual porque puede contener series históricas
-   * recortadas por el motor de generación. Reconstruimos aquí el YTD
-   * acumulado por año a partir de las ventas mensuales reales.
+   * Trayectoria acumulada por año.
    *
-   * Regla:
-   * - La trayectoria visible comienza en 2023.
-   * - Cada año se acumula desde su primer mes con dato real.
-   * - Si el proveedor inició operaciones durante el año (p.ej. INFARMA
-   *   en abril de 2026), el eje comienza en ese mes.
-   * - No se inventan ceros ni meses inexistentes.
+   * FUENTE PRIMARIA: serie_mensual del proveedor.
+   * No usamos serie_multianual para años históricos cuando existe la venta
+   * mensual real, porque un snapshot operativo puede traer una ventana parcial
+   * (por ejemplo, solo Jul-Ago) y hacer parecer que la historia comienza en julio.
+   *
+   * Regla de comparabilidad:
+   * - visible desde 2023;
+   * - cada año se acumula desde enero (o desde su primer mes real si comenzó
+   *   operaciones durante ese año);
+   * - los años se cortan al mismo mes operativo;
+   * - 2022 queda fuera;
+   * - solo si no existe serie_mensual para un año se usa serie_multianual como
+   *   fallback posicional.
    */
   const ANIO_INICIO_TRAYECTORIA = 2023;
   const fechaOperativa = String(snap.fecha_operativa || "");
   const anioOperativo = Number(fechaOperativa.slice(0,4));
   const mesOperativo = Number(fechaOperativa.slice(5,7));
 
-  // La serie multianual es la fuente correcta para la trayectoria:
-  // contiene el acumulado YTD por año calculado por el motor comercial.
-  // No se reconstruye desde serie_mensual porque ese arreglo puede ser
-  // una ventana operativa y no representar toda la historia disponible.
-  const multianual = snap?.serie_multianual || payload?.serie_multianual || null;
   const series = {};
+  const mensual = Array.isArray(payload?.serie_mensual) ? payload.serie_mensual : [];
 
+  // Agrupar venta mensual real por año/mes.
+  const mensualPorAnio = {};
+  mensual.forEach(r => {
+    const texto = String(r?.mes || "");
+    const anio = Number(texto.slice(0,4));
+    const mes = Number(texto.slice(5,7));
+    const valor = Number(r?.valor);
+    if (
+      Number.isFinite(anio) &&
+      Number.isFinite(mes) &&
+      anio >= ANIO_INICIO_TRAYECTORIA &&
+      anio <= anioOperativo &&
+      mes >= 1 && mes <= mesOperativo &&
+      Number.isFinite(valor)
+    ) {
+      if (!mensualPorAnio[anio]) mensualPorAnio[anio] = {};
+      mensualPorAnio[anio][mes] = valor;
+    }
+  });
+
+  // Construir trayectoria desde la venta mensual real.
+  Object.entries(mensualPorAnio).forEach(([anioTxt, meses]) => {
+    const anio = Number(anioTxt);
+    const mesesDisponibles = Object.keys(meses).map(Number).sort((a,b) => a-b);
+    if (!mesesDisponibles.length) return;
+
+    // Si existe enero, arrancamos en enero. Si el proveedor comenzó después,
+    // arrancamos en su primer mes con venta real.
+    const primerMes = mesesDisponibles[0];
+    let acumulado = 0;
+    series[anio] = mesesDisponibles
+      .filter(m => m <= mesOperativo)
+      .map(m => {
+        acumulado += meses[m];
+        return {mes:m, valor:acumulado};
+      });
+  });
+
+  // Fallback SOLO para años sin venta mensual disponible.
+  const multianual = snap?.serie_multianual || payload?.serie_multianual || null;
   if (multianual && typeof multianual === "object") {
     Object.entries(multianual).forEach(([anioRaw, valores]) => {
       const anio = Number(anioRaw);
-      if (!Number.isFinite(anio) || anio < ANIO_INICIO_TRAYECTORIA || anio > anioOperativo) return;
-      if (!Array.isArray(valores)) return;
+      if (
+        !Number.isFinite(anio) ||
+        anio < ANIO_INICIO_TRAYECTORIA ||
+        anio > anioOperativo ||
+        series[anio] ||
+        !Array.isArray(valores)
+      ) return;
 
       const puntos = valores
-        .map((valor, idx) => ({ mes:idx + 1, valor:Number(valor) }))
-        .filter(p =>
-          p.mes >= 1 &&
-          p.mes <= 12 &&
-          p.mes <= (anio === anioOperativo ? mesOperativo : 12) &&
-          Number.isFinite(p.valor) &&
-          p.valor >= 0
-        );
+        .slice(0, Math.min(12, mesOperativo))
+        .map((valor, idx) => ({mes:idx + 1, valor:Number(valor)}))
+        .filter(p => Number.isFinite(p.valor) && p.valor >= 0);
 
-      // Elimina únicamente el tramo inicial sin venta real.
-      // Los ceros posteriores sí se conservan como parte de la trayectoria.
-      const primerIndice = puntos.findIndex(p => p.valor > 0);
-      if (primerIndice >= 0) series[anio] = puntos.slice(primerIndice);
-    });
-  }
-
-  // Fallback para releases antiguos que no tengan serie_multianual.
-  if (!Object.keys(series).length && Array.isArray(payload?.serie_mensual)) {
-    payload.serie_mensual.forEach(r => {
-      const texto = String(r?.mes || "");
-      const anio = Number(texto.slice(0,4));
-      const mes = Number(texto.slice(5,7));
-      const valor = Number(r?.valor);
-      if (
-        anio >= ANIO_INICIO_TRAYECTORIA &&
-        anio <= anioOperativo &&
-        mes >= 1 && mes <= 12 &&
-        (anio < anioOperativo || mes <= mesOperativo) &&
-        Number.isFinite(valor)
-      ) {
-        if (!series[anio]) series[anio] = [];
-        series[anio].push({mes, valor});
-      }
-    });
-
-    Object.keys(series).forEach(anio => {
-      series[anio].sort((a,b) => a.mes - b.mes);
-      let acumulado = 0;
-      series[anio] = series[anio].map(p => {
-        acumulado += p.valor;
-        return {mes:p.mes, valor:acumulado};
-      });
+      const primero = puntos.findIndex(p => p.valor > 0);
+      if (primero >= 0) series[anio] = puntos.slice(primero);
     });
   }
 
@@ -681,7 +690,7 @@ function renderTendencias(payload, snap) {
 
   const trayectorias = series;
   const aniosVisibles = anios.filter(a => (trayectorias[a] || []).length > 0);
-    const allVals = aniosVisibles.flatMap(a => (trayectorias[a] || []).map(p => p.valor));
+  const allVals = aniosVisibles.flatMap(a => (trayectorias[a] || []).map(p => p.valor));
   const min = 0;
   const max = allVals.length ? Math.max(...allVals) : 1;
   const rango = Math.max(max - min, 1);
@@ -693,11 +702,7 @@ function renderTendencias(payload, snap) {
     else colors[a] = "#A9B0B5";
   });
 
-  /*
-   * Si existe historia completa desde enero, el eje empieza en enero.
-   * Si el proveedor inició operaciones durante el año y solo existe una
-   * trayectoria (INFARMA), el eje comienza en su primer mes real.
-   */
+  // Un único año con inicio tardío conserva su primer mes real.
   const primerMesGlobal = (() => {
     const primeros = aniosVisibles
       .map(a => (trayectorias[a] || [])[0]?.mes)
@@ -705,11 +710,7 @@ function renderTendencias(payload, snap) {
     return (aniosVisibles.length === 1 && primeros.length) ? Math.min(...primeros) : 1;
   })();
 
-  const ultimoMesGlobal = Math.max(
-    primerMesGlobal,
-    Math.min(12, mesOperativo || 12)
-  );
-
+  const ultimoMesGlobal = Math.max(primerMesGlobal, Math.min(12, mesOperativo || 12));
   const mesesEje = [];
   for (let m = primerMesGlobal; m <= ultimoMesGlobal; m++) mesesEje.push(m);
 
