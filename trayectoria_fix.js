@@ -35,13 +35,15 @@
       return primero >= 0 ? puntos.slice(primero) : [];
     };
 
-    // La release de agosto puede traer la serie_multianual del snapshot
-    // más reciente recortada a la ventana operativa (p.ej. solo Jul-Ago)
-    // para años históricos. Eso no debe reemplazar una serie histórica
-    // completa que sí existe en snapshots anteriores del mismo proveedor.
-    // Elegimos, por cada año, la serie multianual con mayor longitud
-    // disponible entre todos los snapshots y luego la cortamos al mismo
-    // mes operativo. Así 2023/2024 conservan enero-agosto completos.
+    // IMPORTANTE: una release reciente puede traer la serie_multianual
+    // "alineada" a la ventana operativa: por ejemplo [0,0,0,0,0,0,Jul,Ago].
+    // Su longitud (8) parece mayor que la de un snapshot anterior (7), pero
+    // su cobertura histórica real es peor (solo 2 meses con acumulado).
+    //
+    // Por eso NO seleccionamos por longitud del arreglo. Para años históricos
+    // seleccionamos el snapshot con mayor cobertura real: cantidad de meses
+    // con acumulado positivo. En empate, gana el snapshot más reciente.
+    // Para el año operativo usamos exclusivamente su snapshot operativo.
     const candidatosPorAnio = {};
     const snapshots = payload?.snapshots && typeof payload.snapshots === "object"
       ? payload.snapshots
@@ -54,11 +56,32 @@
         const anio = Number(anioTxt);
         if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp || !Array.isArray(valores)) return;
         if (anio === anioOp && fechaSnap !== String(snap?.fecha_operativa || "")) return;
-        const usable = valores.slice(0, Math.min(12, mesOp)).map(Number).filter(v => Number.isFinite(v) && v >= 0);
+
+        const usable = valores
+          .slice(0, Math.min(12, mesOp))
+          .map(Number)
+          .filter(v => Number.isFinite(v) && v >= 0);
+
         if (!usable.length) return;
+
+        const cobertura = usable.filter(v => v > 0).length;
+        const ultimoPositivo = usable.reduce((acc, v, i) => v > 0 ? i : acc, -1);
         const actual = candidatosPorAnio[anio];
-        if (anio === anioOp || !actual || usable.length > actual.valores.length || (usable.length === actual.valores.length && fechaSnap > actual.fecha)) {
-          candidatosPorAnio[anio] = {fecha:fechaSnap, valores:usable};
+
+        const mejor =
+          anio === anioOp ||
+          !actual ||
+          cobertura > actual.cobertura ||
+          (cobertura === actual.cobertura && ultimoPositivo > actual.ultimoPositivo) ||
+          (cobertura === actual.cobertura && ultimoPositivo === actual.ultimoPositivo && fechaSnap > actual.fecha);
+
+        if (mejor) {
+          candidatosPorAnio[anio] = {
+            fecha: fechaSnap,
+            valores: usable,
+            cobertura,
+            ultimoPositivo
+          };
         }
       });
     });
