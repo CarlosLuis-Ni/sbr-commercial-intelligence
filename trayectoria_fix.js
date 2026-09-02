@@ -48,59 +48,21 @@
       return primero >= 0 ? puntos.slice(primero) : [];
     };
 
-    // Historical trajectory source policy:
-    // - Use real monthly sales first for historical years.
-    // - Use multiyear snapshots only when monthly coverage is unavailable.
-    // - Preserve zero months in multiyear arrays; zeros are positional.
-    const candidatosPorAnio = {};
-    const snapshots = payload?.snapshots && typeof payload.snapshots === "object" ? payload.snapshots : {};
-
-    Object.entries(snapshots).forEach(([fechaSnap, snapshot]) => {
-      const multianual = snapshot?.serie_multianual;
-      if (!multianual || typeof multianual !== "object") return;
-
-      Object.entries(multianual).forEach(([anioTxt, valores]) => {
-        const anio = Number(anioTxt);
-        if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp || !Array.isArray(valores)) return;
-        if (anio === anioOp && fechaSnap !== String(snap?.fecha_operativa || "")) return;
-
-        const usable = valores.slice(0, Math.min(12, mesOp)).map(Number);
-        if (!usable.length || usable.some(v => !Number.isFinite(v) || v < 0)) return;
-
-        const ultimoPositivo = usable.reduce((acc, v, i) => v > 0 ? i : acc, -1);
-        if (ultimoPositivo < 0) return;
-
-        const cobertura = ultimoPositivo + 1;
-        const actual = candidatosPorAnio[anio];
-        const mejor = anio === anioOp || !actual || cobertura > actual.cobertura || (cobertura === actual.cobertura && fechaSnap > actual.fecha);
-
-        if (mejor) candidatosPorAnio[anio] = {fecha: fechaSnap, valores: usable.slice(0, cobertura), cobertura};
-      });
-    });
-
-    // Venta mensual real tiene prioridad para años históricos.
+    // FUENTE ÚNICA PARA LA TRAYECTORIA: venta mensual real del proveedor.
+    //
+    // NO usamos serie_multianual como fallback. Un acumulado multianual puede
+    // contener años de referencia aunque el proveedor no existiera todavía.
+    // Eso hacía aparecer 2023-2025 en proveedores nuevos como INFARMA.
+    //
+    // La trayectoria representa únicamente años con venta mensual real del
+    // proveedor. Si comenzó en abril-2026, la primera serie es 2026 y
+    // comienza en abril.
     Object.entries(porAnioMensual).forEach(([anioTxt, filas]) => {
       const anio = Number(anioTxt);
       const reconstruida = reconstruir(filas);
-      if (!reconstruida.length) return;
-
-      const coberturaMensual = reconstruida[reconstruida.length - 1].mes;
-      const coberturaActual = series[anio]?.[series[anio].length - 1]?.mes || 0;
-
-      if (anio !== anioOp || !series[anio] || coberturaMensual >= coberturaActual) {
-        series[anio] = reconstruida;
-      }
+      if (reconstruida.length) series[anio] = reconstruida;
     });
 
-    // Fallback multianual solo si la venta mensual no pudo reconstruir el año.
-    Object.entries(candidatosPorAnio).forEach(([anioTxt, candidato]) => {
-      const anio = Number(anioTxt);
-      if (series[anio]?.length) return;
-
-      const puntos = candidato.valores.map((valor, idx) => ({mes:idx + 1, valor}));
-      const primero = puntos.findIndex(p => p.valor > 0);
-      if (primero >= 0) series[anio] = puntos.slice(primero);
-    });
     return series;
   }
 
@@ -229,7 +191,7 @@
       '<div class="section"><div class="section-kicker">¿Cómo evoluciona la venta acumulada?</div><h2 class="section-title">Trayectoria acumulada por año</h2>' +
       '<div class="trajectory-chart-wrap">' + generarSvg(series,anios,max,ultimoMes,false) + generarSvg(series,anios,max,ultimoMes,true) + '</div>' +
       '<div class="trajectory-legend">' + anios.map(a => '<span><span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:' + colores(anios)[a] + ';vertical-align:middle;"></span>' + a + '</span>').join("") + '</div>' +
-      '<div class="panel-note">La comparación se realiza sobre meses equivalentes hasta la fecha operativa disponible. La trayectoria utiliza el acumulado multianual del motor comercial y reconstruye desde la venta mensual cuando un año histórico viene incompleto. Si el proveedor inició operaciones durante el año, la trayectoria comienza en su primer mes con venta. La visualización inicia en 2023. Los valores al cierre se muestran en Córdobas (C$).</div></div>' +
+      '<div class="panel-note">La comparación se realiza sobre meses equivalentes hasta la fecha operativa disponible. La trayectoria utiliza exclusivamente la venta mensual real del proveedor y reconstruye el acumulado por año. Si el proveedor inició operaciones durante el año, la trayectoria comienza en su primer mes con venta. La visualización inicia en 2023. Los valores al cierre se muestran en Córdobas (C$).</div></div>' +
       '<div class="section"><div class="section-kicker">¿Está acelerando o desacelerando?</div><h2 class="section-title">Momentum mensual</h2>' +
       '<div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;width:100%;max-width:760px;padding:0 0 9px;border-bottom:1px solid var(--line-strong);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;"><span>Mes</span><span>Variación MoM</span><span style="text-align:right;">%</span><span style="text-align:right;">Venta</span></div>' +
       '<div style="width:100%;max-width:760px;">' + momentumRows + '</div><div class="panel-note">MoM compara cada mes contra el mes inmediatamente anterior. La primera observación no representa una variación comparable y se muestra como “—”.</div></div>' +
@@ -256,7 +218,7 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v8";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v9";
     return true;
   }
 
