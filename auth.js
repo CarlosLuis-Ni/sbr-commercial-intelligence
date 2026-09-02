@@ -227,7 +227,19 @@ function cargarAplicacion() {
   script.src = `app.js?v=${Date.now()}`;
   script.onload = () => {
     agregarBotonCerrarSesion();
-    window.__resolveSbrAuth(window.SBR_CURRENT_USER);
+
+    // Carga posterior al app.js para corregir exclusivamente la trayectoria
+    // acumulada. No modifica autenticación, permisos ni datos.
+    const fix = document.createElement("script");
+    fix.src = `trayectoria_fix.js?v=${Date.now()}`;
+    fix.onload = () => {
+      window.__resolveSbrAuth(window.SBR_CURRENT_USER);
+    };
+    fix.onerror = () => {
+      console.warn("SBR: no se pudo cargar trayectoria_fix.js");
+      window.__resolveSbrAuth(window.SBR_CURRENT_USER);
+    };
+    document.body.appendChild(fix);
   };
   script.onerror = () => {
     window.__sbrAppLoaded = false;
