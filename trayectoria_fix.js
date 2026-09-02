@@ -49,9 +49,7 @@
     const series = {};
 
     Object.keys(porAnio).forEach(anio => {
-      const filas = porAnio[anio]
-        .sort((a, b) => a.mes - b.mes);
-
+      const filas = porAnio[anio].sort((a, b) => a.mes - b.mes);
       let acumulado = 0;
 
       series[anio] = filas.map(p => {
@@ -145,15 +143,11 @@
     const grid = [0.25, 0.5, 0.75, 1].map(ratio => {
       const y = Y_BOTTOM - ratio * (Y_BOTTOM - Y_TOP);
       return `
-        <line
-          x1="${X_INICIO}" y1="${y.toFixed(1)}"
+        <line x1="${X_INICIO}" y1="${y.toFixed(1)}"
           x2="${X_FIN}" y2="${y.toFixed(1)}"
-          stroke="#E4E5E0" stroke-dasharray="3 5"
-        />
-        <text
-          x="4" y="${(y + 3).toFixed(1)}"
-          class="wf-label"
-        >${fmtMonto(max * ratio)}</text>
+          stroke="#E4E5E0" stroke-dasharray="3 5"/>
+        <text x="4" y="${(y + 3).toFixed(1)}"
+          class="wf-label">${fmtMonto(max * ratio)}</text>
       `;
     }).join("");
 
@@ -175,8 +169,8 @@
     const LABEL_GAP = 19;
 
     const ordenadas = [...finales].sort((a, b) => a.py - b.py);
-
     let ultimoY = LABEL_MIN_Y - LABEL_GAP;
+
     ordenadas.forEach(item => {
       item.labelY = Math.max(item.py, ultimoY + LABEL_GAP);
       ultimoY = item.labelY;
@@ -185,33 +179,18 @@
     if (ordenadas.length) {
       const exceso = ordenadas[ordenadas.length - 1].labelY - LABEL_MAX_Y;
       if (exceso > 0) {
-        ordenadas.forEach(item => {
-          item.labelY -= exceso;
-        });
+        ordenadas.forEach(item => { item.labelY -= exceso; });
       }
     }
 
     const etiquetasFinales = finales.map(item => `
-      <line
-        x1="${item.px.toFixed(1)}"
-        y1="${item.py.toFixed(1)}"
-        x2="${LABEL_X - 8}"
-        y2="${item.labelY.toFixed(1)}"
-        stroke="#C9CBC4"
-        stroke-width="1"
-      />
-      <circle
-        cx="${item.px.toFixed(1)}"
-        cy="${item.py.toFixed(1)}"
-        r="2.8"
-        fill="${colores[item.anio]}"
-      />
-      <text
-        x="${LABEL_X}"
-        y="${(item.labelY + 3).toFixed(1)}"
-        class="wf-value"
-        fill="${colores[item.anio]}"
-        text-anchor="start"
+      <line x1="${item.px.toFixed(1)}" y1="${item.py.toFixed(1)}"
+        x2="${LABEL_X - 8}" y2="${item.labelY.toFixed(1)}"
+        stroke="#C9CBC4" stroke-width="1"/>
+      <circle cx="${item.px.toFixed(1)}" cy="${item.py.toFixed(1)}"
+        r="2.8" fill="${colores[item.anio]}"/>
+      <text x="${LABEL_X}" y="${(item.labelY + 3).toFixed(1)}"
+        class="wf-value" fill="${colores[item.anio]}" text-anchor="start"
       >${item.anio} · ${fmtMonto(item.valorFinal)}</text>
     `).join("");
 
@@ -220,10 +199,7 @@
       .map(m => Number(m.mom_pct))
       .filter(Number.isFinite);
 
-    const momMax = Math.max(
-      ...momVals.map(v => Math.abs(v)),
-      1
-    );
+    const momMax = Math.max(...momVals.map(v => Math.abs(v)), 1);
 
     const momentumRows = mom.map((m, idx) => {
       const pct = Number(m.mom_pct);
@@ -271,132 +247,99 @@
       kpis.push({
         label:`QoQ (${qoq.trimestre_actual} vs. ${qoq.trimestre_anterior})`,
         value:fmtPct(qoq.qoq_pct),
-        delta:qoq.trimestre_actual_completo
-          ? "Trimestre completo"
-          : "Último trimestre completo",
+        delta:qoq.trimestre_actual_completo ? "Trimestre completo" : "Último trimestre completo",
         deltaClass:deltaClass(qoq.qoq_pct)
       });
     }
 
     const nota = aniosVisibles.length
-      ? `La comparación se realiza sobre meses equivalentes hasta la fecha operativa disponible. La trayectoria se reconstruye desde las ventas mensuales reales del proveedor. Cada año comienza en su primer mes con venta; por ello, proveedores que iniciaron operaciones durante el año comienzan su línea en ese mes. La visualización inicia en 2023. Los valores al cierre se muestran en Córdobas (C$).`
+      ? "La comparación se realiza sobre meses equivalentes hasta la fecha operativa disponible. La trayectoria se reconstruye desde las ventas mensuales reales del proveedor. Cada año comienza en su primer mes con venta; por ello, proveedores que iniciaron operaciones durante el año comienzan su línea en ese mes. La visualización inicia en 2023. Los valores al cierre se muestran en Córdobas (C$)."
       : "No hay datos históricos suficientes para construir la trayectoria.";
 
     return `
       <div class="kicker">Capítulo 03 — Tendencias</div>
-
-      <h1 class="thesis">
-        Evolución acumulada y señales de aceleración comercial
-      </h1>
-
-      <p class="dek">
-        Lectura de la trayectoria de ventas, comparación interanual y momentum
-        mensual hasta la fecha operativa del período.
-      </p>
-
+      <h1 class="thesis">Evolución acumulada y señales de aceleración comercial</h1>
+      <p class="dek">Lectura de la trayectoria de ventas, comparación interanual y momentum mensual hasta la fecha operativa del período.</p>
       ${kpiStrip(kpis)}
-
       ${renderExecSummary(snap.hallazgos["03"])}
 
       <div class="section">
+        <div class="section-kicker">¿Cómo evoluciona la venta acumulada?</div>
+        <h2 class="section-title">Trayectoria acumulada por año</h2>
 
-        <div class="section-kicker">
-          ¿Cómo evoluciona la venta acumulada?
-        </div>
-
-        <h2 class="section-title">
-          Trayectoria acumulada por año
-        </h2>
-
-        <svg
-          viewBox="0 0 860 240"
-          width="100%"
-          height="240"
-          aria-label="Evolución acumulada de ventas por año"
-        >
+        <svg viewBox="0 0 860 240" width="100%" height="240" aria-label="Evolución acumulada de ventas por año">
           ${grid}
-
-          <line
-            x1="${X_INICIO}" y1="${Y_BOTTOM}"
-            x2="${X_FIN}" y2="${Y_BOTTOM}"
-            stroke="#E4E5E0"
-          />
-
+          <line x1="${X_INICIO}" y1="${Y_BOTTOM}" x2="${X_FIN}" y2="${Y_BOTTOM}" stroke="#E4E5E0"/>
           ${lines}
-
           ${etiquetasFinales}
-
           ${mesesEje.map(mes => `
-            <text
-              x="${xPos(mes).toFixed(1)}"
-              y="208"
-              class="wf-label"
-              text-anchor="middle"
-            >${MESES[mes].slice(0,3)}</text>
+            <text x="${xPos(mes).toFixed(1)}" y="208" class="wf-label" text-anchor="middle">${MESES[mes].slice(0,3)}</text>
           `).join("")}
         </svg>
 
         <div style="display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-muted);margin-top:4px;">
           ${aniosVisibles.map(anio => `
-            <span>
-              <span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:${colores[anio]};vertical-align:middle;"></span>
-              ${anio}
-            </span>
+            <span><span style="display:inline-block;width:8px;height:8px;margin-right:5px;background:${colores[anio]};vertical-align:middle;"></span>${anio}</span>
           `).join("")}
         </div>
 
-        <div class="panel-note">
-          ${nota}
-        </div>
-
+        <div class="panel-note">${nota}</div>
       </div>
 
       <div class="section">
-
-        <div class="section-kicker">
-          ¿Está acelerando o desacelerando?
-        </div>
-
-        <h2 class="section-title">
-          Momentum mensual
-        </h2>
+        <div class="section-kicker">¿Está acelerando o desacelerando?</div>
+        <h2 class="section-title">Momentum mensual</h2>
 
         <div style="display:grid;grid-template-columns:90px 1fr 70px 80px;gap:18px;width:100%;max-width:760px;padding:0 0 9px;border-bottom:1px solid var(--line-strong);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;">
-          <span>Mes</span>
-          <span>Variación MoM</span>
-          <span style="text-align:right;">%</span>
-          <span style="text-align:right;">Venta</span>
+          <span>Mes</span><span>Variación MoM</span><span style="text-align:right;">%</span><span style="text-align:right;">Venta</span>
         </div>
 
-        <div style="width:100%;max-width:760px;">
-          ${momentumRows}
-        </div>
+        <div style="width:100%;max-width:760px;">${momentumRows}</div>
 
         <div class="panel-note">
           MoM compara cada mes contra el mes inmediatamente anterior. La primera observación no representa una variación comparable y se muestra como “—”.
         </div>
-
       </div>
 
       ${renderOportunidadesRiesgos(snap.hallazgos["03"])}
-
       ${renderRecomendacionesCapitulo(snap.recomendaciones, "03")}
     `;
   }
 
   function instalar() {
     if (typeof RENDERERS === "undefined" || typeof render === "undefined") {
-      console.warn("SBR trayectoria fix: app.js todavía no está disponible.");
       return false;
     }
 
     RENDERERS.tendencias = renderTendenciasCorregida;
     window.SBR_TRAYECTORIA_FIX = "2026-09-02-serie-mensual-2023-plus";
-    render();
     return true;
   }
 
-  if (!instalar()) {
-    window.addEventListener("load", instalar, { once:true });
+  function esperarAplicacion() {
+    if (!instalar()) {
+      setTimeout(esperarAplicacion, 100);
+      return;
+    }
+
+    // app.js tiene un init() asíncrono. Esperamos a que el proveedor y su
+    // snapshot estén cargados antes de forzar el primer render.
+    if (
+      typeof PROVEEDORES === "undefined" ||
+      !PROVEEDORES.length ||
+      typeof proveedorActual === "undefined" ||
+      !proveedorActual ||
+      typeof DATA === "undefined" ||
+      !DATA[proveedorActual] ||
+      typeof fechaActual === "undefined" ||
+      !fechaActual
+    ) {
+      setTimeout(esperarAplicacion, 100);
+      return;
+    }
+
+    render();
   }
+
+  esperarAplicacion();
 })();
