@@ -221,7 +221,7 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v11";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v12";
     return true;
   }
 
@@ -229,7 +229,11 @@
     try {
       const id = String(proveedorActual || "").trim().toLowerCase();
       if (!id) return;
-      const res = await fetch("data/" + id + ".json?historical=" + Date.now(), {cache:"no-store"});
+      // IMPORTANTE: auth.js intercepta window.fetch("data/*.json") y lo
+      // redirige a Supabase. Para el histórico maestro necesitamos saltarnos
+      // esa intercepción y leer el archivo estático original del deployment.
+      const fetchOriginal = window.__sbrFetchOriginal || window.fetch;
+      const res = await fetchOriginal("data/" + id + ".json?historical=" + Date.now(), {cache:"no-store"});
       if (!res.ok) return;
       const base = await res.json();
       window.__SBR_HISTORICO_BASE = Array.isArray(base?.serie_mensual) ? base.serie_mensual : [];
