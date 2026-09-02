@@ -13,19 +13,6 @@
     const anioOp = Number(fecha.slice(0,4));
     const mesOp = Number(fecha.slice(5,7));
     const mensual = Array.isArray(payload?.serie_mensual) ? payload.serie_mensual : [];
-    const historicoBase = Array.isArray(window.__SBR_HISTORICO_BASE) ? window.__SBR_HISTORICO_BASE : [];
-    // Para años cerrados, el release privado es la fuente primaria; si el
-    // release trae una ventana parcial, completamos únicamente los meses
-    // históricos faltantes desde el JSON estático maestro del proveedor.
-    const mensualCompleta = [...mensual];
-    const existentes = new Set(mensual.map(r => String(r?.mes || "")));
-    historicoBase.forEach(r => {
-      const mes = String(r?.mes || "");
-      const anio = Number(mes.slice(0,4));
-      if (anio < anioOp && mes && !existentes.has(mes)) {
-        mensualCompleta.push(r);
-      }
-    });
     const series = {};
     const porAnioMensual = {};
 
@@ -218,26 +205,8 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v9";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v10";
     return true;
-  }
-
-  async function cargarHistoricoBase() {
-    if (window.__SBR_HISTORICO_BASE_CARGADO) return;
-    window.__SBR_HISTORICO_BASE_CARGADO = true;
-    try {
-      const fetchBase = window.__sbrFetchOriginal || window.fetch.bind(window);
-      const id = String(proveedorActual || "").trim().toLowerCase();
-      if (!id) return;
-      const res = await fetchBase(`data/${id}.json?historical_base=${Date.now()}`);
-      if (!res.ok) return;
-      const base = await res.json();
-      if (Array.isArray(base?.serie_mensual)) {
-        window.__SBR_HISTORICO_BASE = base.serie_mensual;
-      }
-    } catch (e) {
-      console.warn("SBR: no se pudo cargar histórico maestro de respaldo", e);
-    }
   }
 
   async function esperar() {
@@ -246,7 +215,6 @@
       setTimeout(esperar,100);
       return;
     }
-    await cargarHistoricoBase();
     render();
   }
   esperar();
