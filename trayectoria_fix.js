@@ -13,7 +13,6 @@
     const anioOp = Number(fecha.slice(0,4));
     const mesOp = Number(fecha.slice(5,7));
     const mensual = Array.isArray(payload?.serie_mensual) ? payload.serie_mensual : [];
-    const multianual = snap?.serie_multianual || payload?.serie_multianual || {};
     const series = {};
     const porAnioMensual = {};
 
@@ -36,29 +35,64 @@
       return primero >= 0 ? puntos.slice(primero) : [];
     };
 
-    // Preferir el acumulado multianual del motor cuando viene completo.
-    Object.entries(multianual || {}).forEach(([anioTxt, valores]) => {
+    // La release de agosto puede traer la serie_multianual del snapshot
+    // más reciente recortada a la ventana operativa (p.ej. solo Jul-Ago)
+    // para años históricos. Eso no debe reemplazar una serie histórica
+    // completa que sí existe en snapshots anteriores del mismo proveedor.
+    // Elegimos, por cada año, la serie multianual con mayor longitud
+    // disponible entre todos los snapshots y luego la cortamos al mismo
+    // mes operativo. Así 2023/2024 conservan enero-agosto completos.
+    const candidatosPorAnio = {};
+    const snapshots = payload?.snapshots && typeof payload.snapshots === "object"
+      ? payload.snapshots
+      : {};
+    const snapshotEntries = Object.entries(snapshots);
+    snapshotEntries.forEach(([fechaSnap, snapshot]) => {
+      const multianual = snapshot?.serie_multianual;
+      if (!multianual || typeof multianual !== "object") return;
+      Object.entries(multianual).forEach(([anioTxt, valores]) => {
+        const anio = Number(anioTxt);
+        if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp || !Array.isArray(valores)) return;
+        const usable = valores
+          .slice(0, Math.min(12, mesOp))
+          .map(Number)
+          .filter(v => Number.isFinite(v) && v >= 0);
+        if (!usable.length) return;
+        const actual = candidatosPorAnio[anio];
+        if (!actual || usable.length > actual.valores.length || (usable.length === actual.valores.length && fechaSnap > actual.fecha)) {
+          candidatosPorAnio[anio] = {fecha:fechaSnap, valores:usable};
+        }
+      });
+    });
+
+    // También considerar explícitamente el snapshot operativo seleccionado.
+    const multianualActual = snap?.serie_multianual || {};
+    Object.entries(multianualActual).forEach(([anioTxt, valores]) => {
       const anio = Number(anioTxt);
       if (!Number.isFinite(anio) || anio < ANIO_INICIO || anio > anioOp || !Array.isArray(valores)) return;
-      const limite = anio === anioOp ? Math.min(mesOp, valores.length) : Math.min(12, valores.length);
-      const puntos = [];
-      for (let mes=1; mes<=limite; mes++) {
-        const valor = Number(valores[mes-1]);
-        if (Number.isFinite(valor) && valor >= 0) puntos.push({mes, valor});
-      }
-      if (puntos.length >= Math.min(3, limite)) {
-        const primero = puntos.findIndex(p => p.valor > 0);
-        if (primero >= 0) series[anio] = puntos.slice(primero);
+      const usable = valores.slice(0, Math.min(12, mesOp)).map(Number).filter(v => Number.isFinite(v) && v >= 0);
+      if (!usable.length) return;
+      const actual = candidatosPorAnio[anio];
+      const fechaActualSnap = String(snap?.fecha_operativa || "");
+      if (!actual || usable.length > actual.valores.length || (usable.length === actual.valores.length && fechaActualSnap > actual.fecha)) {
+        candidatosPorAnio[anio] = {fecha:fechaActualSnap, valores:usable};
       }
     });
 
-    // Si un año histórico no está completo en multianual, reconstruirlo
-    // desde las ventas mensuales reales disponibles en el payload.
+    Object.entries(candidatosPorAnio).forEach(([anioTxt, candidato]) => {
+      const anio = Number(anioTxt);
+      const puntos = candidato.valores.map((valor, idx) => ({mes:idx + 1, valor}));
+      const primero = puntos.findIndex(p => p.valor > 0);
+      if (primero >= 0) series[anio] = puntos.slice(primero);
+    });
+
+    // Último fallback: reconstruir desde ventas mensuales cuando exista una
+    // serie mensual más completa que la candidata multianual seleccionada.
     Object.entries(porAnioMensual).forEach(([anioTxt, filas]) => {
       const anio = Number(anioTxt);
-      if (!series[anio] || series[anio].length < 3) {
-        const reconstruida = reconstruir(filas);
-        if (reconstruida.length) series[anio] = reconstruida;
+      const reconstruida = reconstruir(filas);
+      if (reconstruida.length && (!series[anio] || reconstruida.length > series[anio].length)) {
+        series[anio] = reconstruida;
       }
     });
 
@@ -217,7 +251,7 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v4";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v5";
     return true;
   }
 
