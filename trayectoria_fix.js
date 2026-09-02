@@ -243,7 +243,7 @@
     if (typeof RENDERERS === "undefined") return false;
     instalarEstilos();
     RENDERERS.tendencias = renderTendenciasCorregida;
-    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v6";
+    window.SBR_TRAYECTORIA_FIX = "2026-09-02-historical-series-v7";
     return true;
   }
 
