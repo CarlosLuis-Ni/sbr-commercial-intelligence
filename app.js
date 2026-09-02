@@ -867,7 +867,7 @@ function renderTendencias(payload, snap) {
             const y = item.labelY;
             return `<line x1="${item.px.toFixed(1)}" y1="${item.py.toFixed(1)}" x2="${LABEL_X-5}" y2="${y.toFixed(1)}" stroke="#C9CBC4" stroke-width="1"/>
               <circle cx="${item.px.toFixed(1)}" cy="${item.py.toFixed(1)}" r="2.8" fill="${colors[item.anio]}"/>
-              <text x="${LABEL_X}" y="${(y+3).toFixed(1)}" class="wf-value" fill="${colors[item.anio]}" text-anchor="start">${fmtMonto(item.valorFinal)} · ${item.anio}</text>`;
+              <text x="${LABEL_X}" y="${(y+3).toFixed(1)}" class="wf-value" fill="${colors[item.anio]}" text-anchor="start">${fmtMonto(item.valorFinal)}</text>`;
           }).join("");
         })()}
         ${mesesEje.map(m => {
@@ -887,7 +887,7 @@ function renderTendencias(payload, snap) {
 
       <div class="panel-note">
         La comparación se realiza sobre meses equivalentes hasta la fecha operativa disponible.
-        La trayectoria se reconstruye desde la venta mensual real. Si el proveedor inició operaciones
+        La trayectoria utiliza la serie multianual acumulada calculada por el motor comercial. Si el proveedor inició operaciones
         durante el año, la trayectoria comienza en su primer mes con venta. Los valores al cierre
         de cada trayectoria se muestran en Córdobas (C$).
       </div>
